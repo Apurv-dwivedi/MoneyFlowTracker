@@ -1,141 +1,196 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Money Flow Tracker</title>
-
-<link rel="stylesheet" href="style.css">
-
-<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
-
-<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Money Flow Tracker</title>
+    
+    <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>💰</text></svg>">
+    
+    <link rel="stylesheet" href="style.css">
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    
+    <script src="https://cdn.jsdelivr.net/npm/chart.js" crossorigin="anonymous"></script>
 </head>
-
 <body>
 
-<div class="container">
+    <div class="menu-btn" onclick="toggleSidebar()">☰</div>
 
-    <h1>💰 Money Tracker</h1>
-    <p class="tagline">Track Every Rupee, Build Every Dream 🚀</p>
+    <div class="sidebar" id="mySidebar">
+        <button class="close-btn" onclick="toggleSidebar()">×</button>
+        <div class="sidebar-content">
+            <h3 style="color: white; margin-bottom: 20px; text-align: center;">⚙️ Settings</h3>
+            
+            <a href="#" id="loginBtn" class="auth-link login-link" onclick="handleAuth('login')">🔐 Login / Sign Up</a>
+            <a href="#" id="logoutBtn" class="auth-link logout-link" onclick="handleAuth('logout')" style="display: none;">🚪 Logout</a>
+            
+            <hr style="border: 0; border-top: 1px solid rgba(255,255,255,0.05); margin: 15px 0;">
 
-    <!-- CARDS SECTION -->
-    <div class="cards">
+            <a href="#" onclick="alert('Profile DB Connection Pending...')">👤 My Profile</a>
+            <a href="#" onclick="exportToCSV()">📥 Export Data (CSV)</a>
+            <a href="#" onclick="alert('Theme toggle coming soon!')">🌙 Theme Toggle</a>
+            <a href="#" onclick="resetAllData(); toggleSidebar();" style="color: #ef4444; margin-top: 20px;">🗑️ Clear All History</a>
+        </div>
+    </div>
 
-        <!-- DAILY BUDGET CARD -->
-        <div class="card">
-            <h3>📅 Daily Budget</h3>
+    <div class="container">
+        <h1>💰 Money Tracker</h1>
+        <p class="tagline">Track Every Rupee, Build Every Dream 🚀</p>
 
-            <p id="todayLimit">Limit: ₹0</p>
-            <p id="spentToday">Spent: ₹0</p>
-            <p id="remainingToday">Remain: ₹0</p>
-
-            <div class="progress-container">
-                <div id="progressBar"></div>
+        <div class="cards">
+            <div class="card">
+                <h3>📅 Daily Budget</h3>
+                <p id="todayLimit" style="font-size: 16px; color: #94a3b8; font-weight: 500;">Limit: ₹0</p>
+                <p id="spentToday" style="font-size: 16px; color: #ef4444; font-weight: 500;">Spent: ₹0</p>
+                <p id="remainingToday" style="font-size: 18px; color: #38bdf8; font-weight: 600; margin-top: 5px;">Remain: ₹0</p>
+                <div class="progress-container">
+                    <div id="progressBar"></div>
+                </div>
+            </div>
+            <div class="card">
+                <h3>💰 Total Available</h3>
+                <p id="totalMoney">₹0</p>
+            </div>
+            <div class="card">
+                <h3>🏦 Savings</h3>
+                <p id="savings">₹0</p>
+            </div>
+            <div class="card">
+                <h3>💸 Expense</h3>
+                <p id="expense">₹0</p>
+            </div>
+            <div class="card emergency-card">
+                <h3>🚨 Emergency Fund</h3>
+                <p id="emergencyDisplay" style="color: #ef4444; font-size: 24px; font-weight: 700;">₹0</p>
+            </div>
+            <div class="card remaining">
+                <h3>📊 Remaining Balance</h3>
+                <p id="remaining">₹0</p>
             </div>
         </div>
 
-        <!-- TOTAL MONEY -->
-        <div class="card">
-            <h3>💰 Total Available</h3>
-            <p id="totalMoney">₹0</p>
-        </div>
+        <div class="main-layout">
+            
+            <div class="left-panel">
+                
+                <div class="monthly-summary">
+                    <h2>📅 Monthly Summary</h2>
+                    <div style="display: flex; justify-content: space-between; margin-top: 15px;">
+                        <p>Income: <br><span id="monthlyIncome" style="color: #22c55e; font-size: 20px; font-weight: 600;">₹0</span></p>
+                        <p>Expense: <br><span id="monthlyExpense" style="color: #ef4444; font-size: 20px; font-weight: 600;">₹0</span></p>
+                        <p>Savings: <br><span id="savingRate" style="color: #38bdf8; font-size: 20px; font-weight: 600;">0%</span></p>
+                    </div>
+                </div>
 
-        <!-- SAVINGS -->
-        <div class="card">
-            <h3>🏦 Savings</h3>
-            <p id="savings">₹0</p>
-        </div>
+                <div class="smart-insights">
+                    <h2>💡 Smart Insights</h2>
+                    <div class="insights-grid">
+                        <div class="insight-box">
+                            <span id="topCategory" style="color: #38bdf8; font-size: 18px; font-weight: 600;">-</span><br>
+                            <small>Top Spending Category</small>
+                        </div>
+                        <div class="insight-box">
+                            <span id="highestExpense" style="color: #ef4444; font-size: 18px; font-weight: 600;">₹0</span><br>
+                            <small>Highest Single Expense</small>
+                        </div>
+                        <div class="insight-box">
+                            <span id="totalTransactions" style="color: #22c55e; font-size: 18px; font-weight: 600;">0</span><br>
+                            <small>Total Transactions</small>
+                        </div>
+                    </div>
+                </div>
 
-        <!-- EXPENSE -->
-        <div class="card">
-            <h3>💸 Expense</h3>
-            <p id="expense">₹0</p>
-        </div>
+                <div class="chart-section" id="chartSection">
+                    <h2>📊 Expense Analysis</h2>
+                    <canvas id="expenseChart"></canvas>
+                </div>
 
-        <!-- REMAINING -->
-        <div class="card remaining">
-            <h3>📊 Remaining Balance</h3>
-            <p id="remaining">₹0</p>
-        </div>
+                <div class="history">
+                    <div class="history-header">
+                        <h2>Transaction History</h2>
+                        <div class="filter-container" style="display: flex; gap: 12px; align-items: center; flex-wrap: wrap;">
+                            <div class="filter-pills">
+                                <button class="pill active" id="filter-all" onclick="setFilter('all')">All</button>
+                                <button class="pill" id="filter-income" onclick="setFilter('income')">Income</button>
+                                <button class="pill" id="filter-expense" onclick="setFilter('expense')">Expense</button>
+                            </div>
+                            <select id="tableCategoryFilter" onchange="setCategoryFilter(this.value)" class="table-filter-select">
+                                <option value="all">All Categories 🔍</option>
+                                <option value="Food">🍔 Food</option>
+                                <option value="Travel">🚗 Travel</option>
+                                <option value="Shopping">🛍️ Shopping</option>
+                                <option value="Education">📚 Education</option>
+                                <option value="Bills">💡 Bills</option>
+                                <option value="Emergency">🚨 Emergency Use</option>
+                                <option value="Other">📦 Other</option>
+                            </select>
+                        </div>
+                    </div>
+                    
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>Date</th>
+                                <th>Type</th>
+                                <th>Category</th>
+                                <th>Amount</th>
+                                <th>Description</th>
+                                <th>Action</th>
+                            </tr>
+                        </thead>
+                        <tbody id="transactionList"></tbody>
+                    </table>
+                </div>
+            </div>
 
+            <div class="right-panel">
+                
+                <div class="form-section">
+                    <h2>Add Transaction</h2>
+                    
+                    <select id="type" onchange="toggleCategory()">
+                        <option value="income" selected>Income</option>
+                        <option value="expense">Expense</option>
+                        <option value="saving">Saving</option>
+                        <option value="emergency_add">Add to Emergency</option>
+                    </select>
+
+                    <div id="categoryContainer" style="display: none;">
+                        <select id="category">
+                            <option value="Food">🍔 Food</option>
+                            <option value="Travel">🚗 Travel</option>
+                            <option value="Shopping">🛍️ Shopping</option>
+                            <option value="Education">📚 Education</option>
+                            <option value="Bills">💡 Bills</option>
+                            <option value="Emergency">🚨 Emergency Use</option>
+                            <option value="Other">📦 Other</option>
+                        </select>
+                    </div>
+
+                    <input type="number" id="amount" placeholder="Enter Amount">
+                    <input type="text" id="description" placeholder="Description">
+                    
+                    <button onclick="addTransaction()">Add Transaction</button>
+                </div>
+
+                <div class="goal-tracker form-section">
+                    <h2>🎯 Savings Goal</h2>
+                    <div class="goal-card">
+                        <h4 style="color: white; margin-bottom: 5px; font-size: 16px;">💻 High-End Workstation Fund</h4>
+                        <p style="color: #94a3b8; font-size: 14px; margin-bottom: 12px;">
+                            <span id="goalCurrent" style="color: #38bdf8; font-weight: 600;">₹0</span> / ₹1,50,000
+                        </p>
+                        <div class="progress-container" style="background: rgba(0,0,0,0.3); height: 10px;">
+                            <div id="goalProgress" style="background: linear-gradient(90deg, #38bdf8, #8b5cf6);"></div>
+                        </div>
+                        <p class="goal-percent" id="goalPercent" style="margin-top: 10px; font-size: 13px; color: #cbd5e1; text-align: right;">0% Achieved</p>
+                    </div>
+                </div>
+
+            </div>
+        </div>
     </div>
 
-    <!-- MONTHLY SUMMARY -->
-    <div class="monthly-summary">
-
-        <h2>📅 Monthly Summary</h2>
-
-        <p>Total Income: <span id="monthlyIncome">₹0</span></p>
-        <p>Total Expense: <span id="monthlyExpense">₹0</span></p>
-        <p>Savings Rate: <span id="savingRate">0%</span></p>
-
-    </div>
-
-    <!-- FORM SECTION -->
-    <div class="form-section">
-
-        <h2>Add Transaction</h2>
-
-        <select id="type" onchange="toggleCategory()">
-            <option value="income" selected>Income</option>
-            <option value="expense">Expense</option>
-            <option value="saving">Saving</option>
-        </select>
-
-        <div id="categoryContainer">
-            <select id="category">
-                <option value="Food">🍔 Food</option>
-                <option value="Travel">🚗 Travel</option>
-                <option value="Shopping">🛍️ Shopping</option>
-                <option value="Education">📚 Education</option>
-                <option value="Bills">💡 Bills</option>
-                <option value="Other">📦 Other</option>
-            </select>
-        </div>
-
-        <input type="number" id="amount" placeholder="Enter Amount">
-        <input type="text" id="description" placeholder="Description">
-
-        <button onclick="addTransaction()">Add Transaction</button>
-
-        <button onclick="resetAllData()" class="reset-btn">
-            Reset All Data
-        </button>
-
-    </div>
-
-    <!-- CHART -->
-    <div class="chart-section" id="chartSection">
-        <h2>📊 Expense Analysis</h2>
-        <canvas id="expenseChart"></canvas>
-    </div>
-
-    <!-- HISTORY -->
-    <div class="history">
-
-        <h2>Transaction History</h2>
-
-        <table>
-            <thead>
-                <tr>
-                    <th>Date</th>
-                    <th>Type</th>
-                    <th>Category</th>
-                    <th>Amount</th>
-                    <th>Description</th>
-                    <th>Action</th>
-                </tr>
-            </thead>
-
-            <tbody id="transactionList"></tbody>
-        </table>
-
-    </div>
-
-</div>
-
-<script src="script.js"></script>
-
+    <script src="script.js"></script>
 </body>
 </html>

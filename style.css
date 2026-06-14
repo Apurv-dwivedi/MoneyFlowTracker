@@ -1,0 +1,382 @@
+*{
+    margin:0;
+    padding:0;
+    box-sizing:border-box;
+    font-family:'Poppins',sans-serif;
+}
+
+body{
+    background:#0f172a;
+    color:white;
+    min-height:100vh;
+    padding:30px;
+}
+
+.container{
+    max-width:1200px;
+    margin:auto;
+}
+
+h1{
+    text-align:center;
+    margin-bottom:30px;
+    color:#38bdf8;
+}
+
+.cards{
+    display:grid;
+    grid-template-columns:repeat(auto-fit,minmax(220px,1fr));
+    gap:20px;
+}
+
+.card{
+    background:#1e293b;
+    padding:25px;
+    border-radius:15px;
+    text-align:center;
+    transition:.3s;
+    box-shadow:0 4px 15px rgba(0,0,0,.3);
+}
+
+.card:hover{
+    transform:translateY(-5px);
+}
+
+.card h3{
+    margin-bottom:10px;
+    color:#cbd5e1;
+}
+
+.card p{
+    font-size:28px;
+    font-weight:700;
+    color:#22c55e;
+}
+
+.remaining p{
+    color:#facc15;
+}
+
+.form-section{
+    margin-top:40px;
+    background:#1e293b;
+    padding:25px;
+    border-radius:15px;
+}
+
+.form-section h2{
+    margin-bottom:20px;
+}
+
+.form-section select,
+.form-section input{
+    width:100%;
+    padding:12px;
+    margin-bottom:15px;
+    border:none;
+    outline:none;
+    border-radius:10px;
+    background:#334155;
+    color:white;
+}
+
+button{
+    width:100%;
+    padding:12px;
+    border:none;
+    border-radius:10px;
+    background:#38bdf8;
+    color:black;
+    font-weight:600;
+    cursor:pointer;
+    transition:.3s;
+}
+
+button:hover{
+    background:#0ea5e9;
+}
+
+.history{
+    margin-top:40px;
+    background:#1e293b;
+    padding:25px;
+    border-radius:15px;
+    overflow-x:auto;
+}
+
+.history h2{
+    margin-bottom:20px;
+}
+
+table{
+    width:100%;
+    border-collapse:collapse;
+}
+
+th{
+    background:#334155;
+}
+
+th,td{
+    padding:12px;
+    text-align:center;
+    border:1px solid #475569;
+}
+
+tr:hover{
+    background:#334155;
+}
+
+@media(max-width:768px){
+
+    body{
+        padding:15px;
+    }
+
+    .card p{
+        font-size:22px;
+    }
+
+}
+.reset-btn{
+    margin-top:10px;
+    background:#ef4444;
+    color:white;
+}
+
+.reset-btn:hover{
+    background:#dc2626;
+}
+    /* ------------------------------------------------------ */
+body{
+    min-height:100vh;
+    padding:30px;
+    color:white;
+    font-family:'Poppins',sans-serif;
+
+    background: linear-gradient(
+        135deg,
+        #0f172a,
+        #1e3a8a,
+        #0f172a
+    );
+
+    background-size:400% 400%;
+
+    animation:bgMove 12s ease infinite;
+}
+
+@keyframes bgMove{
+    0%{
+        background-position:0% 50%;
+    }
+    50%{
+        background-position:100% 50%;
+    }
+    100%{
+        background-position:0% 50%;
+    }
+}
+.card{
+    background: rgba(255,255,255,0.08);
+
+    backdrop-filter: blur(15px);
+
+    border:1px solid rgba(255,255,255,0.1);
+
+    padding:25px;
+
+    border-radius:20px;
+
+    text-align:center;
+
+    transition:.4s;
+
+    box-shadow:
+    0 8px 32px rgba(0,0,0,.3);
+}
+.card:hover{
+
+    transform:
+    translateY(-10px)
+    scale(1.03);
+
+    box-shadow:
+    0 0 20px #353a3d,
+    0 0 40px #38bdf8;
+}
+h1{
+    text-align:center;
+
+    margin-bottom:30px;
+
+    font-size:3rem;
+
+    font-weight:700;
+
+    color:#38bdf8;
+
+    text-shadow:
+    0 0 10px #40616f,
+    0 0 20px #2a3032;
+}
+button{
+
+    width:100%;
+
+    padding:14px;
+
+    border:none;
+
+    border-radius:12px;
+
+    font-size:16px;
+
+    font-weight:600;
+
+    cursor:pointer;
+
+    transition:.3s;
+
+    background:
+    linear-gradient(
+        45deg,
+        #38bdf8,
+        #06b6d4
+    );
+
+    color:white;
+}
+
+button:hover{
+
+    transform:translateY(-3px);
+
+    box-shadow:
+    0 0 15px #474225,
+    0 0 30px #38bdf8;
+}
+button{
+
+    width:100%;
+
+    padding:14px;
+
+    border:none;
+
+    border-radius:12px;
+
+    font-size:16px;
+
+    font-weight:600;
+
+    cursor:pointer;
+
+    transition:.3s;
+
+    background:
+    linear-gradient(
+        45deg,
+        #38bdf8,
+        #06b6d4
+    );
+
+    color:white;
+}
+
+button:hover{
+
+    transform:translateY(-3px);
+
+    box-shadow:
+    0 0 15px #38bdf8,
+    0 0 30px #38bdf8;
+}
+button{
+
+    width:100%;
+
+    padding:14px;
+
+    border:none;
+
+    border-radius:12px;
+
+    font-size:16px;
+
+    font-weight:600;
+
+    cursor:pointer;
+
+    transition:.3s;
+
+    background:
+    linear-gradient(
+        45deg,
+        #38bdf8,
+        #06b6d4
+    );
+
+    color:white;
+}
+.remaining{
+
+    border:2px solid #facc15;
+
+    box-shadow:
+    0 0 15px rgba(250,204,21,.4);
+}
+#totalMoney{
+    color:#22c55e;
+}
+
+#savings{
+    color:#3b82f6;
+}
+
+#expense{
+    color:#ef4444;
+}
+
+#remaining{
+    color:#facc15;
+}
+.history{
+
+    background:
+    rgba(255,255,255,0.08);
+
+    backdrop-filter:blur(15px);
+
+    border-radius:20px;
+}
+.card,
+.form-section,
+.history{
+
+    animation:fadeUp .8s ease;
+}
+
+@keyframes fadeUp{
+
+    from{
+        opacity:0;
+        transform:translateY(30px);
+    }
+
+    to{
+        opacity:1;
+        transform:translateY(0);
+    }
+}
+.income-row{
+    color:#22c55e;
+}
+
+.expense-row{
+    color:#ef4444;
+}
+
+.saving-row{
+    color:#3b82f6;
+}

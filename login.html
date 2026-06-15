@@ -1,0 +1,233 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Login - Money Tracker</title>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2" crossorigin="anonymous"></script>
+    
+    <style>
+        /* =========================================
+           🌍 GLOBAL STYLES & NOIR AESTHETIC
+        ========================================= */
+        body { 
+            min-height: 100vh; 
+            background-color: #050505; /* Deep Noir Base */
+            color: white; 
+            display: flex; 
+            align-items: center; 
+            justify-content: center; 
+            font-family: 'Poppins', sans-serif; 
+            margin: 0; 
+            overflow: hidden; 
+        }
+
+        /* =========================================
+           🌌 AMBIENT CINEMATIC LIGHTING (ORBS)
+        ========================================= */
+        body::before, body::after { 
+            content: ''; 
+            position: fixed; 
+            border-radius: 50%; 
+            filter: blur(150px); 
+            z-index: -1; 
+            opacity: 0.2; 
+        }
+        body::before { 
+            top: -10%; left: -10%; width: 60vw; height: 60vw; 
+            background: radial-gradient(#1e3a8a 0%, transparent 70%); /* Cinematic Blue */
+            animation: driftBlue 20s alternate infinite; 
+        }
+        body::after { 
+            bottom: -10%; right: -10%; width: 70vw; height: 70vw; 
+            background: radial-gradient(#6d28d9 0%, transparent 70%); /* Deep Purple */
+            animation: driftPurple 20s alternate infinite; 
+        }
+
+        @keyframes driftBlue {
+            0% { transform: translate(0, 0) scale(1); }
+            100% { transform: translate(15vw, 15vh) scale(1.1); }
+        }
+
+        @keyframes driftPurple {
+            0% { transform: translate(0, 0) scale(1); }
+            100% { transform: translate(-15vw, -15vh) scale(1.1); }
+        }
+        
+        /* =========================================
+           ✨ LUXURY GLOW WRAPPER & ANIMATION
+        ========================================= */
+        .glow-wrapper {
+            position: relative;
+            padding: 2px; /* Border thickness */
+            border-radius: 22px;
+            background: linear-gradient(135deg, rgba(56, 189, 248, 0.5), rgba(0, 0, 0, 0), rgba(168, 85, 247, 0.5));
+            animation: borderGlow 4s linear infinite;
+            z-index: 10;
+        }
+
+        @keyframes borderGlow {
+            0%, 100% { opacity: 0.8; }
+            50% { opacity: 0.4; }
+        }
+
+        /* =========================================
+           📦 HIGH-END GLASS LOGIN BOX
+        ========================================= */
+        .login-box { 
+            background: rgba(10, 10, 15, 0.6); /* Studio dark glass */
+            padding: 50px 40px; 
+            border-radius: 20px; 
+            backdrop-filter: blur(25px); 
+            box-shadow: 0 20px 50px rgba(0, 0, 0, 0.8), inset 0 0 0 1px rgba(255, 255, 255, 0.05); 
+            width: 90vw; 
+            max-width: 380px; 
+            text-align: center; 
+        }
+
+        /* =========================================
+           💎 FLOATING LOGO
+        ========================================= */
+        .floating-logo {
+            font-size: 50px;
+            margin-bottom: 10px;
+            display: inline-block;
+            animation: floatLogo 3s ease-in-out infinite;
+            filter: drop-shadow(0 10px 15px rgba(0,0,0,0.5));
+        }
+
+        @keyframes floatLogo {
+            0%, 100% { transform: translateY(0); }
+            50% { transform: translateY(-10px); }
+        }
+
+        h2 { margin-bottom: 5px; color: #fff; font-size: 26px; font-weight: 600; letter-spacing: 1px; }
+        p { color: #94a3b8; font-size: 14px; margin-bottom: 30px; }
+        
+        /* =========================================
+           📝 INPUTS & BUTTONS
+        ========================================= */
+        input { 
+            width: 100%; 
+            padding: 16px; 
+            margin-bottom: 20px; 
+            border: 1px solid rgba(255, 255, 255, 0.08); 
+            border-radius: 12px; 
+            background: rgba(0, 0, 0, 0.4); 
+            color: white; 
+            font-size: 14px; 
+            box-sizing: border-box; 
+            outline: none; 
+            transition: all 0.3s ease; 
+        }
+        input::placeholder { color: #475569; }
+        input:focus { 
+            border-color: #38bdf8; 
+            box-shadow: 0 0 20px rgba(56, 189, 248, 0.15); 
+            background: rgba(0, 0, 0, 0.6);
+        }
+        
+        button { 
+            width: 100%; 
+            padding: 16px; 
+            background: linear-gradient(135deg, #0ea5e9, #3b82f6); 
+            color: white; 
+            border: none; 
+            border-radius: 12px; 
+            font-size: 16px; 
+            font-weight: 600; 
+            letter-spacing: 0.5px;
+            cursor: pointer; 
+            transition: all 0.3s ease; 
+            margin-bottom: 20px; 
+            box-shadow: 0 4px 15px rgba(14, 165, 233, 0.3);
+        }
+        button:hover { 
+            transform: translateY(-2px); 
+            box-shadow: 0 8px 25px rgba(14, 165, 233, 0.5); 
+            background: linear-gradient(135deg, #38bdf8, #2563eb); 
+        }
+        
+        .toggle-link { color: #38bdf8; cursor: pointer; font-weight: 600; transition: 0.3s; }
+        .toggle-link:hover { text-decoration: none; text-shadow: 0 0 10px rgba(56, 189, 248, 0.5); }
+    </style>
+</head>
+<body>
+
+    <div class="glow-wrapper">
+        <div class="login-box">
+            
+            <div class="floating-logo">💰</div>
+            
+            <h2>Money Tracker</h2>
+            <p id="formSubtitle">Secure your financial future</p>
+            
+            <input type="email" id="email" placeholder="Email Address">
+            <input type="password" id="password" placeholder="Password">
+            
+            <button id="submitBtn" onclick="handleAuthAction()">Enter Dashboard</button>
+            
+            <p style="margin-bottom: 0; font-size: 13px; color: #64748b;">
+                <span id="toggleText">New here?</span> 
+                <a class="toggle-link" onclick="toggleMode()">Create Account</a>
+            </p>
+        </div>
+    </div>
+
+    <script>
+        // 🚨🚨🚨 APNI ASLI SUPABASE KEYS YAHAN DAALNA MAT BHOOLNA 🚨🚨🚨
+var supabaseUrl = 'https://utssselrilchpgupextj.supabase.co';
+var supabaseKey = 'sb_publishable_73uoQGX7Q_STdh_8TFbj-Q_pnpoMrkF';
+        
+        var supabaseClient = supabase.createClient(supabaseUrl, supabaseKey);
+
+        let isLoginMode = true;
+
+        function toggleMode() {
+            isLoginMode = !isLoginMode;
+            document.getElementById('submitBtn').innerText = isLoginMode ? 'Enter Dashboard' : 'Create Account';
+            document.getElementById('formSubtitle').innerText = isLoginMode ? 'Secure your financial future' : 'Start your financial journey';
+            document.getElementById('toggleText').innerText = isLoginMode ? "New here?" : "Already a member?";
+            document.querySelector('.toggle-link').innerText = isLoginMode ? 'Create Account' : 'Sign In';
+        }
+
+        async function handleAuthAction() {
+            const email = document.getElementById('email').value;
+            const password = document.getElementById('password').value;
+            
+            if(!email || !password) { 
+                alert("Please enter both email and password!"); 
+                return; 
+            }
+            
+            const btn = document.getElementById('submitBtn');
+            const originalText = btn.innerText;
+            btn.innerText = "Authenticating...";
+
+            if(isLoginMode) {
+                const { data, error } = await supabaseClient.auth.signInWithPassword({ email, password });
+                
+                if(error) { 
+                    alert(error.message); 
+                    btn.innerText = originalText; 
+                } else { 
+                    window.location.href = 'index.html'; 
+                }
+            } else {
+                const { data, error } = await supabaseClient.auth.signUp({ email, password });
+                
+                if(error) { 
+                    alert(error.message); 
+                    btn.innerText = originalText; 
+                } else { 
+                    alert("Account Created! You can now log in."); 
+                    toggleMode(); 
+                    btn.innerText = "Enter Dashboard";
+                }
+            }
+        }
+    </script>
+</body>
+</html>

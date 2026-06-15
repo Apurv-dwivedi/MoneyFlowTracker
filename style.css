@@ -1,121 +1,128 @@
-* { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Poppins', sans-serif; }
-
-/* 🌌 Cinematic Studio Background */
-body {
-    min-height: 100vh; color: #c7cdd6; background-color: #050505;
-    background-image: radial-gradient(circle at top left, rgba(56, 189, 248, 0.12), transparent 50%),
-                      radial-gradient(circle at bottom right, rgba(34, 197, 94, 0.08), transparent 50%);
-    background-size: 200% 200%; animation: slowAurora 15s ease-in-out infinite alternate;
-    padding: 30px 20px; overflow-x: hidden;
-}
-
-@keyframes slowAurora { 0% { background-position: 0% 0%; } 50% { background-position: 100% 100%; } 100% { background-position: 0% 50%; } }
-
-.container { max-width: 1300px; margin: auto; }
-h1 { text-align: center; margin-bottom: 5px; font-size: 2.8rem; font-weight: 700; color: #f1f5f9; text-shadow: 0 0 15px rgba(56, 189, 248, 0.4); }
-.tagline { text-align: center; color: #94a3b8; margin-bottom: 30px; font-size: 1rem; }
-
-/* 🍔 Sidebar Menu */
-.menu-btn { position: absolute; top: 30px; right: 40px; font-size: 30px; color: #38bdf8; cursor: pointer; z-index: 1000; transition: 0.3s; }
-.menu-btn:hover { transform: scale(1.1); color: white; text-shadow: 0 0 10px #38bdf8; }
-.sidebar { position: fixed; top: 0; right: -320px; width: 300px; height: 100vh; background: rgba(15, 23, 42, 0.95); backdrop-filter: blur(20px); border-left: 1px solid rgba(255, 255, 255, 0.1); box-shadow: -10px 0 30px rgba(0, 0, 0, 0.5); transition: right 0.4s cubic-bezier(0.4, 0, 0.2, 1); z-index: 9999; padding: 30px 20px; }
-.sidebar.active { right: 0; }
-.close-btn { background: transparent; color: #ef4444; font-size: 40px; border: none; cursor: pointer; float: right; margin-top: -10px; line-height: 1; }
-.sidebar-content { margin-top: 60px; }
-.sidebar-content a { display: block; padding: 15px; color: #cbd5e1; text-decoration: none; font-size: 16px; border-bottom: 1px solid rgba(255, 255, 255, 0.05); transition: 0.3s; border-radius: 8px; }
-.sidebar-content a:hover { background: rgba(56, 189, 248, 0.1); color: #38bdf8; padding-left: 25px; }
-
-/* 📦 Top Cards Grid (Updated to 6 Cards - 3 columns) */
-.cards { display: grid; grid-template-columns: repeat(3, 1fr); gap: 20px; }
-.card { background: rgba(255, 255, 255, 0.05); border: 1px solid rgba(255, 255, 255, 0.1); backdrop-filter: blur(15px); border-radius: 20px; padding: 20px; text-align: center; box-shadow: 0 8px 32px rgba(0, 0, 0, 0.2); transition: 0.4s ease; display: flex; flex-direction: column; justify-content: center; min-height: 140px; }
-.card:hover { transform: translateY(-8px); box-shadow: 0 10px 25px rgba(56, 189, 248, 0.2); border-color: rgba(255, 255, 255, 0.2); }
-.card h3 { margin-bottom: 10px; color: #cbd5e1; font-size: 1.1rem; }
-.card p { font-size: 24px; font-weight: 700; }
-.card.remaining { border: 1px solid rgba(250, 204, 21, 0.5); box-shadow: 0 0 15px rgba(250, 204, 21, 0.1); }
-.card.emergency-card { border: 1px solid rgba(239, 68, 68, 0.4); box-shadow: 0 0 15px rgba(239, 68, 68, 0.1); }
-
-/* Progress Bar */
-.progress-container { width: 100%; height: 8px; background: rgba(255, 255, 255, 0.1); border-radius: 20px; overflow: hidden; margin-top: 15px; }
-#progressBar { height: 100%; width: 0%; background: linear-gradient(90deg, #22c55e, #38bdf8, #ef4444); transition: width 0.4s ease; }
-#totalMoney { color: #22c55e; } #savings { color: #3b82f6; } #expense { color: #ef4444; } #remaining { color: #facc15; }
-
-/* 🏢 Main Layout */
-.main-layout { display: grid; grid-template-columns: 2fr 1fr; gap: 25px; margin-top: 25px; align-items: start; }
-.left-panel, .right-panel { display: flex; flex-direction: column; gap: 25px; }
-
-/* Common Box Style */
-.monthly-summary, .chart-section, .history, .form-section, .smart-insights { background: rgba(30, 41, 59, 0.5); backdrop-filter: blur(15px); border-radius: 20px; border: 1px solid rgba(255, 255, 255, 0.1); padding: 25px; box-shadow: 0 8px 32px rgba(0, 0, 0, 0.2); }
-h2 { font-size: 1.3rem; color: #f1f5f9; margin-bottom: 20px; border-bottom: 1px solid rgba(255, 255, 255, 0.05); padding-bottom: 10px; }
-
-/* 💡 Smart Insights */
-.insights-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 15px; }
-.insight-box { background: rgba(15, 23, 42, 0.6); padding: 15px; border-radius: 12px; text-align: center; border: 1px solid rgba(255, 255, 255, 0.05); }
-.insight-box small { color: #94a3b8; font-size: 12px; }
-
-/* 🎯 Forms & Inputs */
-.form-section select, .form-section input { width: 100%; padding: 14px; margin-bottom: 15px; border: 1px solid rgba(255, 255, 255, 0.1); outline: none; border-radius: 12px; background: rgba(15, 23, 42, 0.6); color: white; font-size: 15px; transition: all 0.3s; }
-.form-section select:focus, .form-section input:focus { border-color: #38bdf8; box-shadow: 0 0 10px rgba(56, 189, 248, 0.2); }
-button { width: 100%; padding: 14px; border: none; border-radius: 12px; font-size: 16px; font-weight: 600; cursor: pointer; transition: 0.3s ease; background: linear-gradient(45deg, #38bdf8, #06b6d4); color: white; }
-button:hover { transform: translateY(-3px); box-shadow: 0 0 15px rgba(56, 189, 248, 0.5); }
-
-/* 🎛️ Filters & Table */
-.history-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; border-bottom: 1px solid rgba(255, 255, 255, 0.05); padding-bottom: 10px; }
-.history-header h2 { border: none; margin: 0; padding: 0; }
-.filter-pills { display: flex; gap: 10px; }
-.pill { background: transparent; border: 1px solid rgba(255, 255, 255, 0.2); color: #94a3b8; padding: 6px 14px; border-radius: 20px; font-size: 12px; cursor: pointer; transition: all 0.3s ease; width: auto; margin: 0; }
-.pill:hover, .pill.active { border-color: #38bdf8; color: white; }
-.pill.active { background: rgba(56, 189, 248, 0.2); color: #38bdf8; }
-.table-filter-select { padding: 6px 12px; border-radius: 20px; background: rgba(15, 23, 42, 0.6); backdrop-filter: blur(10px); color: #94a3b8; border: 1px solid rgba(255, 255, 255, 0.2); font-size: 12px; outline: none; cursor: pointer; width: auto; margin: 0; }
-.table-filter-select option { background: #0f172a; color: white; }
-
-.history { overflow-x: auto; }
-table { width: 100%; border-collapse: collapse; }
-th { background: rgba(15, 23, 42, 0.8); color: #94a3b8; font-weight: 500; }
-th, td { padding: 14px; text-align: center; border-bottom: 1px solid rgba(255, 255, 255, 0.05); }
-tr:hover { background: rgba(255, 255, 255, 0.03); }
-
-/* 📊 Chart Size Fix */
-.chart-section { display: flex; flex-direction: column; align-items: center; }
-#expenseChart { max-width: 300px !important; max-height: 300px !important; margin: 15px auto 0; }
-
-/* 🎯 Savings Goal Card */
-.goal-card { background: linear-gradient(135deg, rgba(30, 41, 59, 0.8), rgba(15, 23, 42, 0.9)); border: 1px solid rgba(255, 255, 255, 0.1); padding: 20px; border-radius: 16px; position: relative; overflow: hidden; }
-
-/* 📱 Responsive Design */
-@media (max-width: 1100px) { .cards { grid-template-columns: repeat(2, 1fr); } }
-@media (max-width: 900px) { .main-layout { grid-template-columns: 1fr; } }
-@media (max-width: 600px) { h1 { font-size: 2.2rem; } .cards { grid-template-columns: 1fr; } .menu-btn { top: 20px; right: 20px; } }
 /* =========================================
-   🔐 AUTHENTICATION BUTTONS (SIDEBAR)
+   🌍 GLOBAL STYLES & GOOGLE FONTS
 ========================================= */
-.auth-link {
-    font-weight: 600 !important;
-    text-align: center;
-    margin-bottom: 15px !important;
-    background: rgba(255, 255, 255, 0.05);
-    border: 1px solid rgba(255, 255, 255, 0.1) !important;
-    border-radius: 10px !important;
-    padding: 12px !important;
+* { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Poppins', sans-serif; }
+body { min-height: 100vh; color: #c7cdd6; background-color: #050505; padding: 30px 20px; margin: 0; overflow-x: hidden; position: relative; z-index: 1; transition: background 0.4s, color 0.4s; }
+
+body::before, body::after { content: ''; position: fixed; border-radius: 50%; filter: blur(150px); z-index: -1; opacity: 0.15; }
+body::before { top: -10%; left: -10%; width: 60vw; height: 60vw; background: radial-gradient(#1e3a8a 0%, transparent 70%); animation: driftBlue 20s ease-in-out infinite alternate; }
+body::after { bottom: -10%; right: -10%; width: 70vw; height: 70vw; background: radial-gradient(#6d28d9 0%, transparent 70%); animation: driftPurple 20s ease-in-out infinite alternate; }
+@keyframes driftBlue { 0% { transform: translate(0, 0) scale(1); } 100% { transform: translate(15vw, 15vh) scale(1.1); } }
+@keyframes driftPurple { 0% { transform: translate(0, 0) scale(1); } 100% { transform: translate(-15vw, -15vh) scale(1.1); } }
+
+.container { max-width: 1300px; margin: auto; position: relative; z-index: 10; }
+h1 { text-align: center; color: #ffffff; font-size: 32px; font-weight: 700; letter-spacing: 1px; margin-bottom: 5px; }
+.tagline { text-align: center; color: #94a3b8; font-size: 14px; margin-bottom: 40px; }
+
+/* =========================================
+   🚀 TOP NAVIGATION & AUTH BUTTONS
+========================================= */
+.top-nav-actions { position: absolute; top: 25px; right: 40px; display: flex; align-items: center; gap: 15px; z-index: 1000; }
+.menu-btn { position: relative !important; top: 0 !important; right: 0 !important; font-size: 30px; color: #38bdf8; cursor: pointer; transition: 0.3s; }
+.auth-btn { padding: 8px 20px; border-radius: 20px; font-weight: 600; font-size: 14px; cursor: pointer; border: 1px solid rgba(255, 255, 255, 0.1); background: rgba(15, 23, 42, 0.6); backdrop-filter: blur(10px); transition: all 0.3s ease; width: auto; margin: 0; }
+.login-btn { color: #22c55e; } .login-btn:hover { border-color: #22c55e; box-shadow: 0 0 15px rgba(34, 197, 94, 0.2); background: rgba(34, 197, 94, 0.1); }
+.logout-btn { color: #ef4444; } .logout-btn:hover { border-color: #ef4444; box-shadow: 0 0 15px rgba(239, 68, 68, 0.2); background: rgba(239, 68, 68, 0.1); }
+
+/* =========================================
+   📦 TOP CARDS & LAYOUT
+========================================= */
+.cards { display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 20px; margin-bottom: 30px; }
+.card, .form-section, .history, .chart-section, .monthly-summary, .smart-insights {
+    background: rgba(255, 255, 255, 0.03); padding: 25px; border-radius: 16px; border: 1px solid rgba(255, 255, 255, 0.05); backdrop-filter: blur(10px); box-shadow: 0 4px 30px rgba(0, 0, 0, 0.1); transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+.card:hover { transform: translateY(-5px); box-shadow: 0 8px 40px rgba(0, 0, 0, 0.2); border: 1px solid rgba(255, 255, 255, 0.1); }
+.card h3 { font-size: 16px; color: #cbd5e1; margin-bottom: 10px; font-weight: 500; }
+.card p { font-size: 28px; font-weight: 600; color: #22c55e; }
+.card:nth-child(3) p { color: #38bdf8; }
+.card:nth-child(4) p { color: #ef4444; }
+.emergency-card { border: 1px solid rgba(239, 68, 68, 0.2); background: rgba(239, 68, 68, 0.02); }
+.remaining { border: 1px solid rgba(250, 204, 21, 0.3); } .remaining p { color: #facc15; }
+
+.progress-container { width: 100%; background: rgba(255, 255, 255, 0.1); border-radius: 10px; height: 8px; margin-top: 15px; overflow: hidden; }
+#progressBar { height: 100%; width: 0%; background: linear-gradient(90deg, #22c55e, #ef4444); border-radius: 10px; transition: width 0.4s ease; }
+
+.main-layout { display: grid; grid-template-columns: 2.5fr 1fr; gap: 25px; }
+.form-section, .history, .chart-section, .monthly-summary, .smart-insights { margin-bottom: 25px; }
+h2 { font-size: 18px; color: #ffffff; margin-bottom: 20px; font-weight: 600; border-bottom: 1px solid rgba(255,255,255,0.05); padding-bottom: 10px; }
+
+.insights-grid { display: flex; justify-content: space-between; gap: 15px; }
+.insight-box { background: rgba(0, 0, 0, 0.2); padding: 15px; border-radius: 12px; flex: 1; text-align: center; border: 1px solid rgba(255, 255, 255, 0.02); }
+.insight-box small { color: #94a3b8; font-size: 12px; margin-top: 5px; display: block; }
+
+/* =========================================
+   📝 FORM ELEMENTS & BUTTONS
+========================================= */
+input, select { width: 100%; padding: 14px; margin-bottom: 15px; border: 1px solid rgba(255, 255, 255, 0.1); border-radius: 10px; background: rgba(15, 23, 42, 0.6); color: white; font-size: 14px; outline: none; transition: 0.3s; }
+input::placeholder { color: #64748b; }
+input:focus, select:focus { border-color: #38bdf8; box-shadow: 0 0 10px rgba(56, 189, 248, 0.2); }
+button { width: 100%; padding: 14px; background: linear-gradient(135deg, #38bdf8, #0ea5e9); color: white; border: none; border-radius: 10px; font-size: 16px; font-weight: 600; cursor: pointer; transition: 0.3s ease; }
+button:hover { transform: translateY(-2px); box-shadow: 0 5px 15px rgba(14, 165, 233, 0.4); }
+
+.filter-container { margin-bottom: 20px; }
+.filter-pills { display: flex; gap: 10px; background: rgba(0,0,0,0.2); padding: 5px; border-radius: 20px; }
+.filter-pills .pill { background: transparent; border: none; padding: 6px 15px; border-radius: 15px; color: #94a3b8; font-size: 13px; font-weight: 500; cursor: pointer; transition: 0.3s; width: auto; }
+.filter-pills .pill.active { background: rgba(255,255,255,0.1); color: white; }
+.table-filter-select { width: auto; min-width: 150px; margin: 0; padding: 8px 12px; font-size: 13px; border-radius: 8px; }
+
+table { width: 100%; border-collapse: collapse; margin-top: 10px; }
+th, td { padding: 15px; text-align: left; border-bottom: 1px solid rgba(255, 255, 255, 0.05); font-size: 14px; }
+th { color: #94a3b8; font-weight: 500; text-transform: uppercase; font-size: 12px; letter-spacing: 0.5px; }
+td { color: #cbd5e1; }
+tbody tr:hover { background: rgba(255, 255, 255, 0.02); }
+
+/* =========================================
+   📲 SIDEBAR
+========================================= */
+.sidebar { height: 100%; width: 280px; position: fixed; top: 0; right: -280px; background: rgba(15, 23, 42, 0.95); backdrop-filter: blur(20px); border-left: 1px solid rgba(255,255,255,0.1); overflow-x: hidden; transition: 0.4s ease-in-out; padding-top: 60px; z-index: 1500; box-shadow: -5px 0 30px rgba(0,0,0,0.5); }
+.sidebar.active { right: 0; }
+.sidebar a { padding: 15px 25px; text-decoration: none; font-size: 16px; color: #cbd5e1; display: block; transition: 0.3s; border-bottom: 1px solid rgba(255,255,255,0.02); }
+.sidebar a:hover { color: #38bdf8; background: rgba(255,255,255,0.05); padding-left: 30px; }
+.close-btn { position: absolute; top: 15px; right: 20px; font-size: 24px; background: none; border: none; color: #94a3b8; width: auto; padding: 0; }
+.close-btn:hover { color: white; transform: none; box-shadow: none; }
+
+/* =========================================
+   🚀 NAYA: PROFILE MODAL (Popup)
+========================================= */
+.modal-overlay { position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; background: rgba(0, 0, 0, 0.7); backdrop-filter: blur(5px); z-index: 2000; display: none; align-items: center; justify-content: center; opacity: 0; transition: opacity 0.3s ease; }
+.modal-overlay.active { display: flex; opacity: 1; }
+.modal-content { background: rgba(15, 23, 42, 0.9); border: 1px solid rgba(255, 255, 255, 0.1); padding: 40px; border-radius: 20px; text-align: center; width: 90%; max-width: 400px; position: relative; transform: translateY(-20px); transition: transform 0.3s ease; box-shadow: 0 10px 40px rgba(0,0,0,0.5); }
+.modal-overlay.active .modal-content { transform: translateY(0); }
+.close-modal { position: absolute; top: 15px; right: 20px; font-size: 24px; background: transparent; border: none; color: #94a3b8; width: auto; padding: 0; cursor: pointer; }
+
+/* =========================================
+   🌗 NAYA: LIGHT THEME OVERRIDES
+========================================= */
+body.light-mode { background-color: #f8fafc; color: #1e293b; }
+body.light-mode h1, body.light-mode h2, body.light-mode h3 { color: #0f172a; border-color: rgba(0,0,0,0.1); }
+body.light-mode .card, body.light-mode .form-section, body.light-mode .history, body.light-mode .chart-section, body.light-mode .monthly-summary, body.light-mode .smart-insights { background: rgba(255, 255, 255, 0.8); border: 1px solid rgba(0, 0, 0, 0.05); box-shadow: 0 4px 20px rgba(0, 0, 0, 0.05); }
+body.light-mode input, body.light-mode select { background: #ffffff; color: #1e293b; border: 1px solid #cbd5e1; }
+body.light-mode th { color: #64748b; } body.light-mode td { color: #334155; border-color: rgba(0,0,0,0.05); }
+body.light-mode .insight-box { background: rgba(0, 0, 0, 0.03); border: 1px solid rgba(0,0,0,0.05); }
+body.light-mode .modal-content { background: #ffffff; color: #0f172a; border: none; }
+body.light-mode .sidebar { background: rgba(255,255,255,0.95); border-left: 1px solid rgba(0,0,0,0.1); }
+body.light-mode .sidebar h3 { color: #0f172a !important; }
+body.light-mode .sidebar a { color: #334155; border-color: rgba(0,0,0,0.05); }
+
+/* =========================================
+   📱 RESPONSIVE DESIGN
+========================================= */
+@media (max-width: 1024px) { .main-layout { grid-template-columns: 1fr; } .right-panel { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; } }
+@media (max-width: 768px) { .right-panel { grid-template-columns: 1fr; } .insights-grid { flex-direction: column; } th, td { padding: 10px; font-size: 12px; } .cards { grid-template-columns: 1fr; } }
+@media (max-width: 600px) { .top-nav-actions { top: 15px; right: 15px; gap: 10px; } .auth-btn { padding: 6px 12px; font-size: 12px; } h1 { margin-top: 30px; } }
+/* =========================================
+   📊 CHART RESIZE FIX
+========================================= */
+#expenseChart {
+    max-height: 280px !important; /* Yahan se height control hogi */
+    max-width: 100% !important;
+    margin: 0 auto; /* Chart ko center mein rakhne ke liye */
+    display: block;
 }
 
-.login-link {
-    color: #22c55e !important; /* Premium Green */
-    box-shadow: 0 4px 15px rgba(34, 197, 94, 0.1);
-}
-
-.login-link:hover {
-    background: rgba(34, 197, 94, 0.15) !important;
-    border-color: #22c55e !important;
-    transform: translateY(-2px);
-}
-
-.logout-link {
-    color: #ef4444 !important; /* Premium Red */
-    box-shadow: 0 4px 15px rgba(239, 68, 68, 0.1);
-}
-
-.logout-link:hover {
-    background: rgba(239, 68, 68, 0.15) !important;
-    border-color: #ef4444 !important;
-    transform: translateY(-2px);
+/* Agar container mein bhi thodi padding/margin set karni ho */
+.chart-section {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
 }

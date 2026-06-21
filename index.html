@@ -15,7 +15,9 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
 </head>
 <body>
-
+    <div class="bg-shape shape-1"></div>
+<div class="bg-shape shape-2"></div>
+<div class="bg-shape shape-3"></div>
     <div class="top-nav-actions">
         <button id="loginBtn" class="auth-btn login-btn" onclick="handleAuth('login')">Login / Sign Up</button>
         <button id="logoutBtn" class="auth-btn logout-btn" onclick="handleAuth('logout')" style="display: none;">Logout</button>
@@ -50,10 +52,11 @@
                 <p id="remainingToday" style="font-size: 18px; color: #38bdf8; font-weight: 600; margin-top: 5px;">Remain: ₹0</p>
                 <div class="progress-container"><div id="progressBar"></div></div>
             </div>
-            <div class="card"><h3>💰 Total Available</h3><p id="totalMoney">₹0</p></div>
+            <div class="card"><h3>💰 Total Income</h3><p id="totalMoney">₹0</p></div>
             <div class="card"><h3>🏦 Savings</h3><p id="savings">₹0</p></div>
             <div class="card"><h3>💸 Expense</h3><p id="expense">₹0</p></div>
             <div class="card emergency-card"><h3>🚨 Emergency Fund</h3><p id="emergencyDisplay" style="color: #ef4444; font-size: 24px; font-weight: 700;">₹0</p></div>
+            <div class="card rent-card"><h3>🏠 Total Rent Paid</h3><p id="rentDisplay" style="color: #f97316; font-size: 24px; font-weight: 700;">₹0</p></div>
             <div class="card remaining"><h3>📊 Remaining Balance</h3><p id="remaining">₹0</p></div>
         </div>
 
@@ -103,15 +106,15 @@
                                 <option value="month">This Month 📆</option>
                             </select>
                             <select id="tableCategoryFilter" onchange="setCategoryFilter(this.value)" class="table-filter-select">
-                                <option value="all">All Categories 🔍</option>
-                                <option value="Food">🍔 Food</option>
-                                <option value="Travel">🚗 Travel</option>
-                                <option value="Shopping">🛍️ Shopping</option>
-                                <option value="Education">📚 Education</option>
-                                <option value="Bills">💡 Bills</option>
-                                <option value="Emergency">🚨 Emergency Use</option>
-                                <option value="Other">📦 Other</option>
-                            </select>
+                            <option value="all">All Categories 🔍</option>
+                            <option value="Rent">🏠 Rent</option>  <option value="Food">🍔 Food</option>
+                            <option value="Travel">🚗 Travel</option>
+                            <option value="Shopping">🛍️ Shopping</option>
+                            <option value="Education">📚 Education</option>
+                            <option value="Bills">💡 Bills</option>
+                            <option value="Emergency">🚨 Emergency Use</option>
+                            <option value="Other">📦 Other</option>
+                        </select>
                         </div>
                     </div>
                     <table>
@@ -134,14 +137,14 @@
                     </select>
                     <div id="categoryContainer" style="display: none;">
                         <select id="category">
-                            <option value="Food">🍔 Food</option>
-                            <option value="Travel">🚗 Travel</option>
-                            <option value="Shopping">🛍️ Shopping</option>
-                            <option value="Education">📚 Education</option>
-                            <option value="Bills">💡 Bills</option>
-                            <option value="Emergency">🚨 Emergency Use</option>
-                            <option value="Other">📦 Other</option>
-                        </select>
+                        <option value="Rent">🏠 Rent</option>  <option value="Food">🍔 Food</option>
+                        <option value="Travel">🚗 Travel</option>
+                        <option value="Shopping">🛍️ Shopping</option>
+                        <option value="Education">📚 Education</option>
+                        <option value="Bills">💡 Bills</option>
+                        <option value="Emergency">🚨 Emergency Use</option>
+                        <option value="Other">📦 Other</option>
+                    </select>
                     </div>
                     <input type="number" id="amount" placeholder="Enter Amount">
                     <input type="text" id="description" placeholder="Description">

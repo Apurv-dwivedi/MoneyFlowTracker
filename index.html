@@ -177,7 +177,7 @@
         <div class="modal-content profile-content">
             <button class="close-modal" onclick="closeProfile()">×</button>
             <div class="avatar-container">
-                <img id="profileAvatar" src="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>👤</text></svg>" alt="Profile" />
+               <img id="profileAvatar" src="" alt="User Avatar" onclick="openZoom()" style="cursor: zoom-in;">
                 <input type="file" id="imageUpload" accept="image/*" style="display: none;" onchange="previewImage(event)">
                 <button class="edit-avatar-btn" onclick="document.getElementById('imageUpload').click()">📷 Edit</button>
             </div>
@@ -195,7 +195,9 @@
             </div>
         </div>
     </div>
-
+    <div id="imageZoomModal" class="zoom-overlay" onclick="closeZoom()">
+    <img id="zoomedImage" src="" alt="Zoomed Profile">
+</div>
     <script src="script.js"></script>
 </body>
 </html>

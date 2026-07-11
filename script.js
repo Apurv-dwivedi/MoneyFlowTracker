@@ -93,6 +93,9 @@ async function openProfile() {
 
 function closeProfile() { document.getElementById('imageUpload').value = ""; document.getElementById('profileModal').classList.remove('active'); }
 
+/* =========================
+   📸 SMART HD IMAGE CROP & PREVIEW
+========================= */
 function previewImage(event) {
     const file = event.target.files[0];
     if (file) {
@@ -100,15 +103,45 @@ function previewImage(event) {
         reader.onload = function(e) {
             const img = new Image();
             img.onload = function() {
-                const canvas = document.createElement('canvas'); const ctx = canvas.getContext('2d');
-                canvas.width = 200; canvas.height = 200;
-                ctx.drawImage(img, 0, 0, 200, 200);
-                profileImageData = canvas.toDataURL('image/jpeg', 0.7); 
+                const canvas = document.createElement('canvas'); 
+                const ctx = canvas.getContext('2d');
+                
+                // 🚀 QUALITY FIX: Size bada kar diya (400x400) HD result ke liye
+                const size = 400;
+                canvas.width = size; 
+                canvas.height = size;
+
+                // 🎯 SMART CROP FIX: Photo dabegi nahi, center se perfect crop hogi
+                const scale = Math.max(size / img.width, size / img.height);
+                const x = (size / scale - img.width) / 2;
+                const y = (size / scale - img.height) / 2;
+
+                ctx.drawImage(img, x, y, img.width, img.height, 0, 0, size, size);
+                
+                // 90% quality par save hoga taaki clarity mast rahe
+                profileImageData = canvas.toDataURL('image/jpeg', 0.9); 
                 document.getElementById('profileAvatar').src = profileImageData;
-            }; img.src = e.target.result;
+            }; 
+            img.src = e.target.result;
         }
         reader.readAsDataURL(file);
     }
+}
+
+/* =========================
+   🔍 ZOOM FUNCTIONS
+========================= */
+function openZoom() {
+    const avatarSrc = document.getElementById('profileAvatar').src;
+    // Agar default avatar hai (SVG file) toh zoom nahi hoga
+    if (!avatarSrc.includes('data:image/svg+xml') && avatarSrc !== "") {
+        document.getElementById('zoomedImage').src = avatarSrc;
+        document.getElementById('imageZoomModal').classList.add('active');
+    }
+}
+
+function closeZoom() {
+    document.getElementById('imageZoomModal').classList.remove('active');
 }
 
 async function saveProfile() {
@@ -136,15 +169,26 @@ function exportToCSV() {
 }
 
 function updateBudget() {
-    let daysInMonth = new Date(year, month + 1, 0).getDate();
+    let now = new Date();
+    let daysInMonth = new Date(now.getFullYear(), now.getMonth() + 1, 0).getDate();
+    let currentDay = now.getDate();
+    
+    let remainingDays = daysInMonth - currentDay + 1; 
+
     let remainingMoney = totalMoney - savings - expense - emergencyFund;
     if (remainingMoney < 0) remainingMoney = 0;
-    dailyBudget = remainingMoney / daysInMonth;
+
+
+    dailyBudget = remainingDays > 0 ? (remainingMoney / remainingDays) : remainingMoney;
 }
 function refreshBudgetUI() { updateBudget(); updateDailyBudgetUI(dailyBudget, dailyBudget - spentToday); }
 
 function recalculateTotals() {
     totalMoney = 0; savings = 0; expense = 0; spentToday = 0; emergencyFund = 0; totalRent = 0;
+    
+    // Aaj ki date nikal rahe hain standard YYYY-MM-DD format mein
+    let todayStr = new Date().toISOString().split('T')[0]; 
+
     transactions.forEach(item => {
         const amt = Number(item.amount);
         if (item.type === "income") totalMoney += amt; 
@@ -155,11 +199,15 @@ function recalculateTotals() {
             if (item.category === "Emergency") emergencyFund -= amt; 
             else if (item.category === "Rent") totalRent += amt;
             else if (item.category === "Bills") {} 
-            else spentToday += amt; 
+            else {
+                // 🚀 BUG FIX: Ab sirf wahi kharcha 'spentToday' me judega jo aaj ki date (todayStr) ka hai
+                if (item.date === todayStr) {
+                    spentToday += amt; 
+                }
+            }
         }
     });
 }
-
 /* =========================
    ☁️ SUPABASE: FETCH / LOAD DATA
 ========================= */

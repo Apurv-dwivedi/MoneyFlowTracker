@@ -263,3 +263,40 @@ body.light-mode .sidebar a:hover { background: rgba(0,0,0,0.05) !important; colo
 @media (max-width: 1024px) { .main-layout { grid-template-columns: 1fr; } .right-panel { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; } }
 @media (max-width: 768px) { .right-panel { grid-template-columns: 1fr; } .insights-grid { flex-direction: column; } th, td { padding: 10px; font-size: 12px; } .cards { grid-template-columns: 1fr; } }
 @media (max-width: 600px) { .top-nav-actions { top: 15px; right: 15px; gap: 10px; } .auth-btn { padding: 6px 12px; font-size: 12px; } h1 { margin-top: 30px; } }
+/* =========================================
+   🔍 HD IMAGE ZOOM ANIMATION
+========================================= */
+.zoom-overlay {
+    position: fixed; 
+    top: 0; 
+    left: 0; 
+    width: 100vw; 
+    height: 100vh;
+    background: rgba(0, 0, 0, 0.85); 
+    backdrop-filter: blur(15px);
+    z-index: 9999; 
+    display: none; 
+    align-items: center; 
+    justify-content: center;
+    opacity: 0; 
+    transition: opacity 0.3s ease; 
+    cursor: zoom-out;
+}
+
+.zoom-overlay.active { 
+    display: flex; 
+    opacity: 1; 
+}
+
+.zoom-overlay img {
+    max-width: 85%; 
+    max-height: 85%;
+    border-radius: 20px; 
+    box-shadow: 0 0 50px rgba(168, 85, 247, 0.4); /* Premium Purple Glow */
+    transform: scale(0.8); 
+    transition: transform 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275); /* Bouncy zoom effect */
+}
+
+.zoom-overlay.active img { 
+    transform: scale(1); 
+}

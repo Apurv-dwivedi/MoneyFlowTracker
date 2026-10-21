@@ -257,7 +257,7 @@
                 if (response.ok) {
                     const data = await response.json();
 
-                    localStorage.setItem('jwtToken', data.token);
+                    localStorage.setItem('token', data.token);
                     localStorage.setItem('userId', data.userId);
                     localStorage.setItem('userEmail', data.email);
                     localStorage.setItem('userName', data.name);
@@ -311,10 +311,46 @@
         }
     }
 
-    // Placeholder for Forgot Password (To be implemented in Spring Boot later)
-    function handleForgotPassword(event) {
+    async function handleForgotPassword(event) {
         event.preventDefault();
-        alert("Backend API for Password Reset is pending. Coming soon!");
+
+        // 1. User se email mango
+        const email = prompt("Enter your registered email address:");
+        if (!email) return;
+
+        // 2. Backend ko OTP bhejne ki request karo
+        alert("Sending OTP to your email... Please wait ⏳");
+        try {
+            const response = await fetch(`http://localhost:8080/api/auth/forgot-password?email=${encodeURIComponent(email)}`, {
+                method: 'POST'
+            });
+
+            if (!response.ok) {
+                alert("❌ Error: Email not found in our database!");
+                return;
+            }
+
+            // 3. User se OTP mango
+            const otp = prompt("An OTP has been sent to your email. Enter the 6-digit OTP:");
+            if (!otp) return;
+
+            // 4. User se naya password mango
+            const newPassword = prompt("Enter your new password:");
+            if (!newPassword) return;
+
+            // 5. Backend ko OTP aur Naya Password verify karne bhejo
+            const resetRes = await fetch(`http://localhost:8080/api/auth/reset-password?email=${encodeURIComponent(email)}&otp=${encodeURIComponent(otp)}&newPassword=${encodeURIComponent(newPassword)}`, {
+                method: 'POST'
+            });
+
+            if (resetRes.ok) {
+                alert("✅ Password changed successfully! You can now log in with your new password.");
+            } else {
+                alert("❌ Invalid OTP! Password reset failed.");
+            }
+        } catch (error) {
+            alert("❌ Server Error: Could not connect to backend.");
+        }
     }
 </script>
 </body>

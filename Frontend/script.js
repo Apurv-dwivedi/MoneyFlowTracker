@@ -8,7 +8,7 @@ let expenseChart, trendChartInstance, transactions = [];
 var currentFilter = 'all', currentCategoryFilter = 'all', currentTimeFilter = 'all';
 
 // 🔒 Asli User Data LocalStorage se uthana
-let isLoggedIn = localStorage.getItem('jwtToken') ? true : false;
+let isLoggedIn = (localStorage.getItem('jwtToken') || localStorage.getItem('token')) ? true : false;
 let currentUser = null;
 
 if (isLoggedIn) {
@@ -23,6 +23,24 @@ if (isLoggedIn) {
 let isVaultUnlocked = false;
 function getStoredPin() {
     return localStorage.getItem('history_pin') || '1234';
+}
+
+// 🛡️ Backend ko token bhejne ke liye helper function
+function getAuthHeaders() {
+    let token = localStorage.getItem('jwtToken') || localStorage.getItem('token');
+
+    if (!token || token === "undefined" || token === "null") {
+        console.error("🚨 Token is missing! Clearing local storage...");
+        localStorage.clear();
+        alert("Security Token Reset: Purana kachra saaf ho gaya hai. Ek baar fresh Login karo!");
+        window.location.href = 'login.html';
+        return {};
+    }
+
+    return {
+        'Content-Type': 'application/json',
+        'Authorization': 'Bearer ' + token
+    };
 }
 
 /* ===================================================
@@ -226,28 +244,43 @@ async function downloadPDFReport() {
 }
 
 /* ===================================================
-   👤 PROFILE MODAL LOGIC & 1080p ULTRA-HD CROP
+   👤 PROFILE MODAL LOGIC (CLOUD DB CONNECTED)
 =================================================== */
 let profileImageData = "";
-async function openProfile() {
-    if (currentUser) {
-        document.getElementById('profileEmail').innerText = currentUser.email;
-        document.getElementById('profileOccupation').value = localStorage.getItem('user_occ') || "";
-        document.getElementById('profileBio').value = localStorage.getItem('user_bio') || "";
 
-        const savedImage = localStorage.getItem('userImage_' + currentUser.id);
-        if (savedImage) {
-            document.getElementById('profileAvatar').src = savedImage;
-            profileImageData = savedImage;
-        } else {
-            document.getElementById('profileAvatar').src = "data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>👤</text></svg>";
-        }
-    } else {
+async function openProfile() {
+    if (!currentUser) {
         document.getElementById('profileEmail').innerText = "Not Logged In";
+        return;
     }
 
+    document.getElementById('profileEmail').innerText = currentUser.email;
     document.getElementById('profileTxCount').innerText = transactions.length;
     document.getElementById('profileModal').classList.add('active');
+
+    try {
+        // Backend DB se user ki details fetch karo
+        const response = await fetch(`http://localhost:8080/api/users/${currentUser.id}/profile`, {
+            method: 'GET',
+            headers: getAuthHeaders()
+        });
+
+        if (response.ok) {
+            const userData = await response.json();
+
+            document.getElementById('profileOccupation').value = userData.occupation || "";
+            document.getElementById('profileBio').value = userData.bio || "";
+
+            if (userData.profileImage && userData.profileImage.trim() !== "") {
+                document.getElementById('profileAvatar').src = userData.profileImage;
+                profileImageData = userData.profileImage;
+            } else {
+                document.getElementById('profileAvatar').src = "data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>👤</text></svg>";
+            }
+        }
+    } catch (err) {
+        console.error("Error loading profile from server:", err);
+    }
 }
 
 function closeProfile() {
@@ -303,15 +336,32 @@ async function saveProfile() {
     const occupation = document.getElementById('profileOccupation').value;
     const bio = document.getElementById('profileBio').value;
     const saveBtn = document.querySelector('.modal-content.profile-content button[onclick="saveProfile()"]');
-    saveBtn.innerText = "Saving Profile... ⏳"; saveBtn.disabled = true;
+
+    saveBtn.innerText = "Saving to Cloud... ⏳";
+    saveBtn.disabled = true;
+
     try {
-        localStorage.setItem('user_occ', occupation);
-        localStorage.setItem('user_bio', bio);
-        if (profileImageData) localStorage.setItem('userImage_' + currentUser.id, profileImageData);
-        showToast("Profile saved successfully");
+        // Frontend se backend MySQL me data bhejo
+        const response = await fetch(`http://localhost:8080/api/users/${currentUser.id}/profile`, {
+            method: 'PUT',
+            headers: getAuthHeaders(),
+            body: JSON.stringify({
+                occupation: occupation,
+                bio: bio,
+                profileImage: profileImageData
+            })
+        });
+
+        if (!response.ok) throw new Error("Failed to save profile to database");
+
+        showToast("Profile saved to Database successfully! ☁️");
         closeProfile();
-    } catch (err) { showToast("Error saving profile: " + err.message, "error"); }
-    finally { saveBtn.innerText = "💾 Save Profile"; saveBtn.disabled = false; }
+    } catch (err) {
+        showToast("Error saving profile: " + err.message, "error");
+    } finally {
+        saveBtn.innerText = "💾 Save Profile";
+        saveBtn.disabled = false;
+    }
 }
 
 function toggleSidebar() { document.getElementById("mySidebar").classList.toggle("active"); }
@@ -398,7 +448,11 @@ function recalculateTotals() {
 async function loadData() {
     if(!currentUser) return;
     try {
-        const response = await fetch(`http://localhost:8080/api/transactions/user/${currentUser.id}`);
+        await loadCategories();
+        const response = await fetch(`http://localhost:8080/api/transactions/user/${currentUser.id}`, {
+            method: 'GET',
+            headers: getAuthHeaders() // Naya Token Header
+        });
         if (!response.ok) throw new Error("Backend connection failed!");
 
         const data = await response.json();
@@ -466,7 +520,7 @@ async function addTransaction() {
     try {
         const response = await fetch('http://localhost:8080/api/transactions', {
             method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
+            headers: getAuthHeaders(), // Naya Token Header
             body: JSON.stringify(newTransaction)
         });
 
@@ -499,7 +553,10 @@ async function addTransaction() {
 window.deleteTransaction = async function(id) {
     if (!confirm("Delete this transaction permanently?")) return;
     try {
-        const response = await fetch(`http://localhost:8080/api/transactions/${id}`, { method: 'DELETE' });
+        const response = await fetch(`http://localhost:8080/api/transactions/${id}`, {
+            method: 'DELETE',
+            headers: getAuthHeaders() // Naya Token Header
+        });
         if (!response.ok) throw new Error("Failed to delete");
         await loadData();
         showToast("Transaction deleted successfully");
@@ -512,7 +569,10 @@ window.hideTransaction = async function(id) {
     if (inputPin !== getStoredPin()) { showToast("❌ Incorrect PIN!", "error"); return; }
 
     try {
-        const response = await fetch(`http://localhost:8080/api/transactions/${id}/hide`, { method: 'PUT' });
+        const response = await fetch(`http://localhost:8080/api/transactions/${id}/hide`, {
+            method: 'PUT',
+            headers: getAuthHeaders() // Naya Token Header
+        });
         if (!response.ok) throw new Error("Failed to hide");
         await loadData();
         showToast("Transaction moved to Hidden Vault 🔒");
@@ -525,7 +585,10 @@ window.unhideTransaction = async function(id) {
     if (inputPin !== getStoredPin()) { showToast("❌ Incorrect PIN!", "error"); return; }
 
     try {
-        const response = await fetch(`http://localhost:8080/api/transactions/${id}/unhide`, { method: 'PUT' });
+        const response = await fetch(`http://localhost:8080/api/transactions/${id}/unhide`, {
+            method: 'PUT',
+            headers: getAuthHeaders() // Naya Token Header
+        });
         if (!response.ok) throw new Error("Failed to unhide");
         await loadData();
         showToast("Transaction restored 🔓");
@@ -847,7 +910,10 @@ async function resetAllData() {
     if (!confirm("Warning: This will delete ALL transactions permanently from your database!")) return;
     try {
         for (const transaction of transactions) {
-            await fetch(`http://localhost:8080/api/transactions/${transaction.id}`, { method: 'DELETE' });
+            await fetch(`http://localhost:8080/api/transactions/${transaction.id}`, {
+                method: 'DELETE',
+                headers: getAuthHeaders() // Naya Token Header
+            });
         }
         await loadData();
         showToast("Database Reset Successful");
@@ -944,6 +1010,7 @@ async function handleAuth(action) {
     if (action === 'logout') {
         if(confirm("Are you sure you want to logout?")) {
             localStorage.removeItem('jwtToken');
+            localStorage.removeItem('token');
             localStorage.removeItem('userId');
             localStorage.removeItem('userEmail');
             localStorage.removeItem('userName');
@@ -962,5 +1029,99 @@ function updateAuthUI() {
     } else {
         document.getElementById('loginBtn').style.display = 'block';
         document.getElementById('logoutBtn').style.display = 'none';
+    }
+}
+
+/* ===================================================
+   📂 DYNAMIC CATEGORY MANAGEMENT
+=================================================== */
+let customCategories = [];
+
+async function loadCategories() {
+    if(!currentUser) return;
+    try {
+        const response = await fetch(`http://localhost:8080/api/categories/${currentUser.id}`, {
+            method: 'GET',
+            headers: getAuthHeaders() // Naya Token Header
+        });
+        if (response.ok) {
+            customCategories = await response.json();
+            populateCategoryDropdown();
+        }
+    } catch (err) {
+        console.error("Error loading categories:", err);
+    }
+}
+
+function populateCategoryDropdown() {
+    const catSelect = document.getElementById("category");
+    const filterSelect = document.getElementById("tableCategoryFilter");
+    if (!catSelect || !filterSelect) return;
+
+    let defaultCats = ["Rent", "Food", "Travel", "Shopping", "Education", "Bills", "Emergency", "Other"];
+    let optionsHtml = '';
+
+    defaultCats.forEach(cat => optionsHtml += `<option value="${cat}">${cat}</option>`);
+
+    customCategories.forEach(cat => {
+        if(!defaultCats.includes(cat.name)) {
+            optionsHtml += `<option value="${cat.name}">${cat.name}</option>`;
+        }
+    });
+
+    catSelect.innerHTML = optionsHtml;
+    filterSelect.innerHTML = `<option value="all">All Categories 🔍</option>` + optionsHtml;
+}
+
+async function addNewCategory() {
+    const newCatName = prompt("Enter new custom category name (e.g., Pari ke Gifts, Roorkee Cafe, etc.):");
+    if (!newCatName || newCatName.trim() === "") return;
+
+    try {
+        const response = await fetch(`http://localhost:8080/api/categories/${currentUser.id}`, {
+            method: 'POST',
+            headers: getAuthHeaders(), // Naya Token Header
+            body: JSON.stringify({ name: newCatName.trim(), type: 'expense' })
+        });
+
+        if (response.ok) {
+            showToast("New category added! ✅");
+            await loadCategories();
+        } else {
+            showToast("Failed to add category", "error");
+        }
+    } catch (err) {
+        showToast("Server error while adding category", "error");
+    }
+}
+// 🗑️ Custom Category Delete karne ka function
+async function deleteCustomCategory() {
+    const catSelect = document.getElementById("category");
+    const catName = catSelect.value;
+
+    // Check karo ki jo category select ki hai, wo custom hai ya default
+    const categoryToDelete = customCategories.find(c => c.name === catName);
+
+    if (!categoryToDelete) {
+        showToast("Default categories ko delete nahi kiya ja sakta!", "error");
+        return;
+    }
+
+    if (!confirm(`Are you sure you want to delete '${catName}'?`)) return;
+
+    try {
+        const response = await fetch(`http://localhost:8080/api/categories/${categoryToDelete.id}`, {
+            method: 'DELETE',
+            headers: getAuthHeaders()
+        });
+
+        if (response.ok) {
+            showToast("Category deleted successfully! 🗑️");
+            await loadCategories(); // Dropdown list ko refresh karo
+        } else {
+            showToast("Failed to delete category", "error");
+        }
+    } catch (err) {
+        showToast("Error deleting category", "error");
     }
 }

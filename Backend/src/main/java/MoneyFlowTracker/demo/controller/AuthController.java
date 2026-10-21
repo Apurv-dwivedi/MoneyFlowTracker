@@ -1,12 +1,10 @@
 package MoneyFlowTracker.demo.controller;
 
-import MoneyFlowTracker.demo.dto.AuthRequest;
 import MoneyFlowTracker.demo.entity.User;
 import MoneyFlowTracker.demo.repository.UserRepository;
-import MoneyFlowTracker.demo.util.JwtUtil;
+import MoneyFlowTracker.demo.service.EmailService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.HashMap;
@@ -15,59 +13,107 @@ import java.util.Optional;
 
 @RestController
 @RequestMapping("/api/auth")
-@CrossOrigin(origins = "*") // Frontend se access allow karne ke liye
+@CrossOrigin(origins = "*")
 public class AuthController {
+
+    @Autowired
+    private MoneyFlowTracker.demo.util.JwtUtil jwtUtil;
+
+    @Autowired
+    private org.springframework.security.crypto.password.PasswordEncoder passwordEncoder;
 
     @Autowired
     private UserRepository userRepository;
 
     @Autowired
-    private PasswordEncoder passwordEncoder;
+    private EmailService emailService; // Nayi Email Service inject ki
 
-    @Autowired
-    private JwtUtil jwtUtil;
+    // OTP save karne ke liye temporary storage
+    private Map<String, String> otpStorage = new HashMap<>();
 
-    // 1. SIGNUP API - Naya account banane ke liye
+    // 1. Signup API
     @PostMapping("/signup")
-    public ResponseEntity<?> signup(@RequestBody AuthRequest request) {
-        // Check karo ki email pehle se exist toh nahi karti
-        if (userRepository.findByEmail(request.getEmail()).isPresent()) {
-            return ResponseEntity.badRequest().body("Error: Email is already registered!");
+    public ResponseEntity<?> signup(@RequestBody User user) {
+        if (userRepository.findByEmail(user.getEmail()).isPresent()) {
+            return ResponseEntity.badRequest().body("Email already exists!");
         }
 
-        // Naya User banao aur password ko encrypt (hash) karke save karo
-        User user = new User();
-        user.setName(request.getName());
-        user.setEmail(request.getEmail());
-        user.setPassword(passwordEncoder.encode(request.getPassword()));
-
+        user.setPassword(passwordEncoder.encode(user.getPassword()));
         userRepository.save(user);
-        return ResponseEntity.ok("User registered successfully!");
+
+        // Naya user save hote hi Welcome Email bhej do
+        try {
+            emailService.sendWelcomeEmail(user.getEmail(), user.getName());
+        } catch (Exception e) {
+            System.out.println("Email bhejne me error aaya: " + e.getMessage());
+            // Email fail bhi ho jaye toh account create ho jana chahiye
+        }
+
+        return ResponseEntity.ok("Account created successfully!");
     }
 
-    // 2. LOGIN API - Email/Password check karke Token dene ke liye
     @PostMapping("/login")
-    public ResponseEntity<?> login(@RequestBody AuthRequest request) {
-        Optional<User> userOptional = userRepository.findByEmail(request.getEmail());
+    public ResponseEntity<?> login(@RequestBody User loginRequest) {
+        Optional<User> userOpt = userRepository.findByEmail(loginRequest.getEmail());
 
-        if (userOptional.isPresent()) {
-            User user = userOptional.get();
-            // User ka enter kiya hua password aur DB ka encrypted password match karo
-            if (passwordEncoder.matches(request.getPassword(), user.getPassword())) {
+        if (userOpt.isPresent() && passwordEncoder.matches(loginRequest.getPassword(), userOpt.get().getPassword())) {            User user = userOpt.get();
 
-                // Agar password sahi hai, toh naya JWT token generate karo
-                String token = jwtUtil.generateToken(user.getEmail());
+            String realToken = jwtUtil.generateToken(user.getEmail());
 
-                // Frontend ko token aur basic user detail bhej do
-                Map<String, Object> response = new HashMap<>();
-                response.put("token", token);
-                response.put("userId", user.getId());
-                response.put("email", user.getEmail());
-                response.put("name", user.getName());
+            Map<String, String> response = new HashMap<>();
 
-                return ResponseEntity.ok(response);
-            }
+            // 2. Dummy token ki jagah asli token set kar diya
+            response.put("token", realToken);
+
+            response.put("userId", String.valueOf(user.getId()));
+            response.put("name", user.getName());
+            response.put("email", user.getEmail());
+
+            return ResponseEntity.ok(response);
         }
-        return ResponseEntity.status(401).body("Error: Invalid email or password!");
+
+        return ResponseEntity.status(401).body("Invalid email or password");
+    }
+
+    // 3. Email par OTP bhejne ki API
+    @PostMapping("/forgot-password")
+    public ResponseEntity<?> forgotPassword(@RequestParam String email) {
+        Optional<User> userOpt = userRepository.findByEmail(email);
+        if (!userOpt.isPresent()) {
+            return ResponseEntity.badRequest().body("User not found!");
+        }
+
+        // 6-digit random OTP generate karo
+        String otp = String.format("%06d", new java.util.Random().nextInt(999999));
+        otpStorage.put(email, otp); // OTP ko memory me save kiya
+
+        try {
+            emailService.sendOtpEmail(email, otp);
+            return ResponseEntity.ok("OTP sent to your email.");
+        } catch (Exception e) {
+            System.out.println("OTP Email bhejne me error aaya: " + e.getMessage());
+            return ResponseEntity.status(500).body("Error sending OTP email");
+        }
+    }
+
+    // 4. Naya password save karne ki API
+    @PostMapping("/reset-password")
+    public ResponseEntity<?> resetPassword(@RequestParam String email,
+                                           @RequestParam String otp,
+                                           @RequestParam String newPassword) {
+        // Check karo ki OTP sahi hai ya nahi
+        if (!otpStorage.containsKey(email) || !otpStorage.get(email).equals(otp)) {
+            return ResponseEntity.badRequest().body("Invalid OTP!");
+        }
+
+        // User ka naya password DB me update karo
+        User user = userRepository.findByEmail(email).get();
+        user.setPassword(passwordEncoder.encode(newPassword));
+        userRepository.save(user);
+
+        // Reset hone ke baad OTP delete kar do
+        otpStorage.remove(email);
+
+        return ResponseEntity.ok("Password reset successfully!");
     }
 }

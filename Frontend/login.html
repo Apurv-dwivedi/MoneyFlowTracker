@@ -202,9 +202,9 @@
 </div>
 
 <script>
-    // Redirect if already logged in
+    // Redirect if already logged in (Fixed token naming)
     document.addEventListener("DOMContentLoaded", () => {
-        if (localStorage.getItem('jwtToken')) {
+        if (localStorage.getItem('token')) {
             window.location.href = 'index.html';
         }
     });
@@ -219,6 +219,7 @@
         document.getElementById('formSubtitle').innerText = isLoginMode ? 'Secure your financial future' : 'Start your financial journey';
         document.getElementById('toggleText').innerText = isLoginMode ? "New here?" : "Already a member?";
         document.querySelector('.toggle-link').innerText = isLoginMode ? 'Create Account' : 'Sign In';
+
         // Toggle name input visibility
         document.getElementById('name').style.display = isLoginMode ? 'none' : 'block';
 
@@ -247,24 +248,47 @@
             btn.disabled = true;
 
             try {
-                const response = await fetch('http://localhost:8080/api/auth/login', {
+                // STEP 1: Verify Password & Send OTP
+                const response = await fetch('http://localhost:8080/api/auth/login-step1', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({ email: email, password: password })
                 });
 
                 if (response.ok) {
-                    const data = await response.json();
+                    // STEP 2: Ask user for the OTP
+                    const otp = prompt("🔒 2-Step Verification: An OTP has been sent to your email. Enter the 6-digit OTP:");
 
-                    localStorage.setItem('token', data.token);
-                    localStorage.setItem('userId', data.userId);
-                    localStorage.setItem('userEmail', data.email);
-                    localStorage.setItem('userName', data.name);
-                    localStorage.setItem('isLoggedIn', 'true');
+                    if (!otp) {
+                        alert("Login cancelled. OTP is required.");
+                        btn.innerText = "Enter Dashboard";
+                        btn.disabled = false;
+                        return;
+                    }
 
-                    window.location.href = 'index.html';
+                    btn.innerText = "Verifying OTP... ⏳";
+
+                    // STEP 3: Send OTP to backend for final verification
+                    const verifyRes = await fetch(`http://localhost:8080/api/auth/login-step2?email=${encodeURIComponent(email)}&otp=${encodeURIComponent(otp)}`, {
+                        method: 'POST'
+                    });
+
+                    if (verifyRes.ok) {
+                        const data = await verifyRes.json();
+
+                        // Save token & redirect
+                        localStorage.setItem('token', data.token);
+                        localStorage.setItem('jwtToken', data.token); // Fallback if used elsewhere
+                        localStorage.setItem('userId', data.userId);
+                        localStorage.setItem('userEmail', data.email);
+                        localStorage.setItem('userName', data.name);
+                        localStorage.setItem('isLoggedIn', 'true');
+
+                        window.location.href = 'index.html';
+                    } else {
+                        alert("❌ Login Failed: Incorrect OTP!");
+                    }
                 } else {
-                    const errorMsg = await response.text();
                     alert("❌ Login Failed: Invalid Email or Password");
                 }
             } catch (error) {
@@ -313,11 +337,9 @@
     async function handleForgotPassword(event) {
         event.preventDefault();
 
-        // 1. User se email mango
         const email = prompt("Enter your registered email address:");
         if (!email) return;
 
-        // 2. Backend ko OTP bhejne ki request karo
         alert("Sending OTP to your email... Please wait ⏳");
         try {
             const response = await fetch(`http://localhost:8080/api/auth/forgot-password?email=${encodeURIComponent(email)}`, {
@@ -329,15 +351,12 @@
                 return;
             }
 
-            // 3. User se OTP mango
             const otp = prompt("An OTP has been sent to your email. Enter the 6-digit OTP:");
             if (!otp) return;
 
-            // 4. User se naya password mango
             const newPassword = prompt("Enter your new password:");
             if (!newPassword) return;
 
-            // 5. Backend ko OTP aur Naya Password verify karne bhejo
             const resetRes = await fetch(`http://localhost:8080/api/auth/reset-password?email=${encodeURIComponent(email)}&otp=${encodeURIComponent(otp)}&newPassword=${encodeURIComponent(newPassword)}`, {
                 method: 'POST'
             });

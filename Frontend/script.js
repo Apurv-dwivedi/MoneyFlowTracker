@@ -49,8 +49,27 @@ function getAuthHeaders() {
 function toggleCategory() {
     const catContainer = document.getElementById("categoryContainer");
     const typeSelect = document.getElementById("type");
+    const catSelect = document.getElementById("category");
+    const descInput = document.getElementById("description");
+
+    // Category dropdown show/hide logic
     if (catContainer && typeSelect) {
         catContainer.style.display = (typeSelect.value === "expense") ? "block" : "none";
+    }
+
+    // Description box hide/show logic based on selection
+    if (descInput && typeSelect) {
+        let type = typeSelect.value;
+        let hideDesc = false;
+
+        if (type === "income" || type === "saving" || type === "emergency_add") {
+            hideDesc = true;
+        } else if (type === "expense" && catSelect && catSelect.value === "Rent") {
+            hideDesc = true;
+        }
+
+        descInput.style.display = hideDesc ? "none" : "block";
+        if (hideDesc) descInput.value = ""; // Clear purana text jab hide ho
     }
 }
 window.toggleCategory = toggleCategory;
@@ -75,6 +94,7 @@ window.onload = async function() {
     } else {
         updateAuthUI();
         await loadData();
+        toggleCategory(); // Page load par UI theek karne ke liye call kiya
     }
 };
 
@@ -474,13 +494,15 @@ async function loadData() {
    ➕ ADD TRANSACTION
 =================================================== */
 async function addTransaction() {
-    const addBtn = document.querySelector('#pane-add-transaction button');
+    // FIX: main button ko select kiya by ID
+    const addBtn = document.getElementById('mainAddTxnBtn');
 
     let type = document.getElementById("type").value;
     let category = null;
 
     if (type === "expense") {
-        category = document.getElementById("category").value.trim();
+        let catVal = document.getElementById("category").value;
+        category = catVal ? catVal.trim() : "";
         if (category === "") {
             showToast("Please select a category", "error");
             return;
@@ -493,7 +515,15 @@ async function addTransaction() {
     const amountInput = document.getElementById("amount");
     const descInput = document.getElementById("description");
     const amount = Number(amountInput.value);
-    const description = descInput.value.trim();
+    let description = descInput.value.trim();
+
+    // FIX: Agar description hidden hai, toh default text automatically lagao
+    if (descInput.style.display === "none") {
+        if (type === "income") description = "Income Added";
+        else if (type === "saving") description = "Saving Added";
+        else if (type === "emergency_add") description = "Emergency Fund Added";
+        else if (type === "expense" && category === "Rent") description = "Rent Payment";
+    }
 
     if (amount <= 0 || isNaN(amount) || description === "") {
         showToast("Please enter a valid amount and description", "error");
@@ -1087,6 +1117,13 @@ async function addNewCategory() {
         if (response.ok) {
             showToast("New category added! ✅");
             await loadCategories();
+
+            // FIX: Nayi category ko automatically dropdown mein select karna aur UI update karna
+            const catSelect = document.getElementById("category");
+            if (catSelect) {
+                catSelect.value = newCatName.trim();
+                toggleCategory();
+            }
         } else {
             showToast("Failed to add category", "error");
         }

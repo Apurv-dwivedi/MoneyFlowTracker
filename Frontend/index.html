@@ -113,7 +113,8 @@
 
                 <div id="categoryContainer" style="display: none;">
                     <div style="display: flex; gap: 10px; margin-bottom: 20px;">
-                        <select id="category" style="flex: 1; margin-bottom: 0;">
+                        <!-- FIX: onchange added here so description box updates dynamically -->
+                        <select id="category" style="flex: 1; margin-bottom: 0;" onchange="toggleCategory()">
                             <option value="" disabled selected>Loading categories...</option>
                         </select>
                         <button type="button" onclick="addNewCategory()" style="width: auto; padding: 0 15px; background: #38bdf8; margin-bottom: 0; box-shadow: none;">➕ New</button>
@@ -123,7 +124,8 @@
 
                 <input type="number" id="amount" placeholder="Enter Amount">
                 <input type="text" id="description" placeholder="Description">
-                <button onclick="addTransaction()">Add Transaction</button>
+                <!-- FIX: Added ID to avoid selecting the 'New' button by mistake -->
+                <button id="mainAddTxnBtn" onclick="addTransaction()">Add Transaction</button>
             </div>
         </div>
     </section>

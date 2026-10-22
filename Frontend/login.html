@@ -256,17 +256,10 @@
                 });
 
                 if (response.ok) {
-                    // STEP 2: Ask user for the OTP
-                    const otp = prompt("🔒 2-Step Verification: An OTP has been sent to your email. Enter the 6-digit OTP:");
 
-                    if (!otp) {
-                        alert("Login cancelled. OTP is required.");
-                        btn.innerText = "Enter Dashboard";
-                        btn.disabled = false;
-                        return;
-                    }
-
-                    btn.innerText = "Verifying OTP... ⏳";
+                    // TEMPORARY BYPASS: Direct login (No prompt)
+                    const otp = "123456";
+                    btn.innerText = "Logging in... ⏳";
 
                     // STEP 3: Send OTP to backend for final verification
                     const verifyRes = await fetch(`https://moneyflowtracker.onrender.com/api/auth/login-step2?email=${encodeURIComponent(email)}&otp=${encodeURIComponent(otp)}`, {
@@ -286,7 +279,7 @@
 
                         window.location.href = 'index.html';
                     } else {
-                        alert("❌ Login Failed: Incorrect OTP!");
+                        alert("❌ Login Failed: Backend error!");
                     }
                 } else {
                     alert("❌ Login Failed: Invalid Email or Password");
@@ -340,7 +333,7 @@
         const email = prompt("Enter your registered email address:");
         if (!email) return;
 
-        alert("Sending OTP to your email... Please wait ⏳");
+        alert("Processing request... Please wait ⏳");
         try {
             const response = await fetch(`https://moneyflowtracker.onrender.com/api/auth/forgot-password?email=${encodeURIComponent(email)}`, {
                 method: 'POST'
@@ -351,8 +344,8 @@
                 return;
             }
 
-            const otp = prompt("An OTP has been sent to your email. Enter the 6-digit OTP:");
-            if (!otp) return;
+            // Bypass OTP for forgot password too
+            const otp = "123456";
 
             const newPassword = prompt("Enter your new password:");
             if (!newPassword) return;
@@ -364,7 +357,7 @@
             if (resetRes.ok) {
                 alert("✅ Password changed successfully! You can now log in with your new password.");
             } else {
-                alert("❌ Invalid OTP! Password reset failed.");
+                alert("❌ Password reset failed.");
             }
         } catch (error) {
             alert("❌ Server Error: Could not connect to backend.");

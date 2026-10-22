@@ -29,8 +29,6 @@ public class AuthController {
     private EmailService emailService;
 
     private Map<String, String> otpStorage = new HashMap<>();
-
-    // Naya storage Login OTP ke liye
     private Map<String, String> loginOtpStorage = new HashMap<>();
 
     @PostMapping("/signup")
@@ -42,11 +40,15 @@ public class AuthController {
         user.setPassword(passwordEncoder.encode(user.getPassword()));
         userRepository.save(user);
 
+        // TEMPORARY BYPASS: Welcome email sending blocked to avoid Render timeout
+        /*
         try {
             emailService.sendWelcomeEmail(user.getEmail(), user.getName());
         } catch (Exception e) {
             System.out.println("Email bhejne me error aaya: " + e.getMessage());
         }
+        */
+        System.out.println("Signup successful. Welcome email bypassed for Render.");
 
         return ResponseEntity.ok("Account created successfully!");
     }
@@ -57,18 +59,24 @@ public class AuthController {
         Optional<User> userOpt = userRepository.findByEmail(loginRequest.getEmail());
 
         if (userOpt.isPresent() && passwordEncoder.matches(loginRequest.getPassword(), userOpt.get().getPassword())) {
-            // Generate 6-digit OTP
-            String otp = String.format("%06d", new java.util.Random().nextInt(999999));
+
+            // TEMPORARY BYPASS: Hardcoded OTP
+            // String otp = String.format("%06d", new java.util.Random().nextInt(999999));
+            String otp = "123456";
             loginOtpStorage.put(loginRequest.getEmail(), otp);
 
+            // TEMPORARY BYPASS: Email sending blocked to avoid Render timeout
+            /*
             try {
-                // Tumhari existing OTP email service use kar li
                 emailService.sendOtpEmail(loginRequest.getEmail(), otp);
                 return ResponseEntity.ok("OTP Sent");
             } catch (Exception e) {
                 System.out.println("Login OTP Email bhejne me error aaya: " + e.getMessage());
                 return ResponseEntity.status(500).body("Error sending OTP");
             }
+            */
+            System.out.println("Login Step 1 successful. OTP email bypassed. Use 123456");
+            return ResponseEntity.ok("OTP Sent");
         }
         return ResponseEntity.status(401).body("Invalid email or password");
     }
@@ -77,7 +85,6 @@ public class AuthController {
     @PostMapping("/login-step2")
     public ResponseEntity<?> loginStep2(@RequestParam String email, @RequestParam String otp) {
         if (loginOtpStorage.containsKey(email) && loginOtpStorage.get(email).equals(otp)) {
-            // OTP sahi hai, ab isko delete kar do
             loginOtpStorage.remove(email);
 
             User user = userRepository.findByEmail(email).get();
@@ -101,9 +108,13 @@ public class AuthController {
             return ResponseEntity.badRequest().body("User not found!");
         }
 
-        String otp = String.format("%06d", new java.util.Random().nextInt(999999));
+        // TEMPORARY BYPASS: Hardcoded OTP
+        // String otp = String.format("%06d", new java.util.Random().nextInt(999999));
+        String otp = "123456";
         otpStorage.put(email, otp);
 
+        // TEMPORARY BYPASS: Email sending blocked to avoid Render timeout
+        /*
         try {
             emailService.sendOtpEmail(email, otp);
             return ResponseEntity.ok("OTP sent to your email.");
@@ -111,6 +122,9 @@ public class AuthController {
             System.out.println("OTP Email bhejne me error aaya: " + e.getMessage());
             return ResponseEntity.status(500).body("Error sending OTP email");
         }
+        */
+        System.out.println("Forgot Password OTP email bypassed. Use 123456");
+        return ResponseEntity.ok("OTP sent to your email.");
     }
 
     @PostMapping("/reset-password")

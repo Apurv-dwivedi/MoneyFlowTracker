@@ -260,7 +260,7 @@ async function openProfile() {
 
     try {
         // Backend DB se user ki details fetch karo
-        const response = await fetch(`http://localhost:8080/api/users/${currentUser.id}/profile`, {
+        const response = await fetch(`https://moneyflowtracker.onrender.com/api/users/${currentUser.id}/profile`, {
             method: 'GET',
             headers: getAuthHeaders()
         });
@@ -342,7 +342,7 @@ async function saveProfile() {
 
     try {
         // Frontend se backend MySQL me data bhejo
-        const response = await fetch(`http://localhost:8080/api/users/${currentUser.id}/profile`, {
+        const response = await fetch(`https://moneyflowtracker.onrender.com/api/users/${currentUser.id}/profile`, {
             method: 'PUT',
             headers: getAuthHeaders(),
             body: JSON.stringify({
@@ -449,7 +449,7 @@ async function loadData() {
     if(!currentUser) return;
     try {
         await loadCategories();
-        const response = await fetch(`http://localhost:8080/api/transactions/user/${currentUser.id}`, {
+        const response = await fetch(`https://moneyflowtracker.onrender.com/api/transactions/user/${currentUser.id}`, {
             method: 'GET',
             headers: getAuthHeaders() // Naya Token Header
         });
@@ -518,7 +518,7 @@ async function addTransaction() {
     };
 
     try {
-        const response = await fetch('http://localhost:8080/api/transactions', {
+        const response = await fetch('https://moneyflowtracker.onrender.com/api/transactions', {
             method: 'POST',
             headers: getAuthHeaders(), // Naya Token Header
             body: JSON.stringify(newTransaction)
@@ -553,7 +553,7 @@ async function addTransaction() {
 window.deleteTransaction = async function(id) {
     if (!confirm("Delete this transaction permanently?")) return;
     try {
-        const response = await fetch(`http://localhost:8080/api/transactions/${id}`, {
+        const response = await fetch(`https://moneyflowtracker.onrender.com/api/transactions/${id}`, {
             method: 'DELETE',
             headers: getAuthHeaders() // Naya Token Header
         });
@@ -569,7 +569,7 @@ window.hideTransaction = async function(id) {
     if (inputPin !== getStoredPin()) { showToast("❌ Incorrect PIN!", "error"); return; }
 
     try {
-        const response = await fetch(`http://localhost:8080/api/transactions/${id}/hide`, {
+        const response = await fetch(`https://moneyflowtracker.onrender.com/api/transactions/${id}/hide`, {
             method: 'PUT',
             headers: getAuthHeaders() // Naya Token Header
         });
@@ -585,7 +585,7 @@ window.unhideTransaction = async function(id) {
     if (inputPin !== getStoredPin()) { showToast("❌ Incorrect PIN!", "error"); return; }
 
     try {
-        const response = await fetch(`http://localhost:8080/api/transactions/${id}/unhide`, {
+        const response = await fetch(`https://moneyflowtracker.onrender.com/api/transactions/${id}/unhide`, {
             method: 'PUT',
             headers: getAuthHeaders() // Naya Token Header
         });
@@ -910,7 +910,7 @@ async function resetAllData() {
     if (!confirm("Warning: This will delete ALL transactions permanently from your database!")) return;
     try {
         for (const transaction of transactions) {
-            await fetch(`http://localhost:8080/api/transactions/${transaction.id}`, {
+            await fetch(`https://moneyflowtracker.onrender.com/api/transactions/${transaction.id}`, {
                 method: 'DELETE',
                 headers: getAuthHeaders() // Naya Token Header
             });
@@ -1040,7 +1040,7 @@ let customCategories = [];
 async function loadCategories() {
     if(!currentUser) return;
     try {
-        const response = await fetch(`http://localhost:8080/api/categories/${currentUser.id}`, {
+        const response = await fetch(`https://moneyflowtracker.onrender.com/api/categories/${currentUser.id}`, {
             method: 'GET',
             headers: getAuthHeaders() // Naya Token Header
         });
@@ -1078,7 +1078,7 @@ async function addNewCategory() {
     if (!newCatName || newCatName.trim() === "") return;
 
     try {
-        const response = await fetch(`http://localhost:8080/api/categories/${currentUser.id}`, {
+        const response = await fetch(`https://moneyflowtracker.onrender.com/api/categories/${currentUser.id}`, {
             method: 'POST',
             headers: getAuthHeaders(), // Naya Token Header
             body: JSON.stringify({ name: newCatName.trim(), type: 'expense' })
@@ -1110,7 +1110,7 @@ async function deleteCustomCategory() {
     if (!confirm(`Are you sure you want to delete '${catName}'?`)) return;
 
     try {
-        const response = await fetch(`http://localhost:8080/api/categories/${categoryToDelete.id}`, {
+        const response = await fetch(`https://moneyflowtracker.onrender.com/api/categories/${categoryToDelete.id}`, {
             method: 'DELETE',
             headers: getAuthHeaders()
         });

@@ -1112,23 +1112,37 @@ async function addNewCategory() {
     const newCatName = prompt("Enter new custom category name (e.g., Pari ke Gifts, Roorkee Cafe, etc.):");
     if (!newCatName || newCatName.trim() === "") return;
 
+    const finalCatName = newCatName.trim();
+
     try {
         const response = await fetch(`https://moneyflowtracker.onrender.com/api/categories/${currentUser.id}`, {
             method: 'POST',
-            headers: getAuthHeaders(), // Naya Token Header
-            body: JSON.stringify({ name: newCatName.trim(), type: 'expense' })
+            headers: getAuthHeaders(),
+            body: JSON.stringify({ name: finalCatName, type: 'expense' })
         });
 
         if (response.ok) {
             showToast("New category added! ✅");
-            await loadCategories();
 
-            // FIX: Nayi category ko automatically dropdown mein select karna aur UI update karna
+            // FIX: Nayi category ko locally array me add karke instantly show karna
+            let exists = customCategories.find(c => c.name.toLowerCase() === finalCatName.toLowerCase());
+            if (!exists) {
+                // Agar pehle se list me nahi hai, toh add kardo
+                customCategories.push({ name: finalCatName, type: 'expense' });
+            }
+
+            // Dropdown list ko bina server delay ke update karo
+            populateCategoryDropdown();
+
+            // Dropdown ko forcefully nayi category par set karo
             const catSelect = document.getElementById("category");
             if (catSelect) {
-                catSelect.value = newCatName.trim();
-                toggleCategory();
+                catSelect.value = finalCatName;
+                toggleCategory(); // Ye function description box ko hide kar dega
             }
+
+            // Background mein chupchap server se data sync hone do
+            loadCategories();
         } else {
             showToast("Failed to add category", "error");
         }

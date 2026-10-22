@@ -57,19 +57,25 @@ function toggleCategory() {
         catContainer.style.display = (typeSelect.value === "expense") ? "block" : "none";
     }
 
-    // Description box hide/show logic based on selection
+    // Description box hide/show logic
     if (descInput && typeSelect) {
         let type = typeSelect.value;
         let hideDesc = false;
 
+        // Sirf in default categories mein description box dikhega
+        let categoriesWithDesc = ["Food", "Travel", "Shopping", "Education", "Bills", "Other"];
+
         if (type === "income" || type === "saving" || type === "emergency_add") {
             hideDesc = true;
-        } else if (type === "expense" && catSelect && catSelect.value === "Rent") {
-            hideDesc = true;
+        } else if (type === "expense" && catSelect) {
+            // Agar category "Rent" hai YA koi bhi nayi "Custom" category hai, toh description hide kar do
+            if (!categoriesWithDesc.includes(catSelect.value)) {
+                hideDesc = true;
+            }
         }
 
         descInput.style.display = hideDesc ? "none" : "block";
-        if (hideDesc) descInput.value = ""; // Clear purana text jab hide ho
+        if (hideDesc) descInput.value = ""; // Clear text jab hide ho
     }
 }
 window.toggleCategory = toggleCategory;
@@ -494,7 +500,6 @@ async function loadData() {
    ➕ ADD TRANSACTION
 =================================================== */
 async function addTransaction() {
-    // FIX: main button ko select kiya by ID
     const addBtn = document.getElementById('mainAddTxnBtn');
 
     let type = document.getElementById("type").value;
@@ -517,12 +522,12 @@ async function addTransaction() {
     const amount = Number(amountInput.value);
     let description = descInput.value.trim();
 
-    // FIX: Agar description hidden hai, toh default text automatically lagao
+    // FIX: Agar description hidden hai, toh dynamically us category ka naam daal do
     if (descInput.style.display === "none") {
         if (type === "income") description = "Income Added";
         else if (type === "saving") description = "Saving Added";
         else if (type === "emergency_add") description = "Emergency Fund Added";
-        else if (type === "expense" && category === "Rent") description = "Rent Payment";
+        else if (type === "expense") description = category + " Payment"; // Custom category & Rent ke liye auto-description
     }
 
     if (amount <= 0 || isNaN(amount) || description === "") {
@@ -550,7 +555,7 @@ async function addTransaction() {
     try {
         const response = await fetch('https://moneyflowtracker.onrender.com/api/transactions', {
             method: 'POST',
-            headers: getAuthHeaders(), // Naya Token Header
+            headers: getAuthHeaders(),
             body: JSON.stringify(newTransaction)
         });
 

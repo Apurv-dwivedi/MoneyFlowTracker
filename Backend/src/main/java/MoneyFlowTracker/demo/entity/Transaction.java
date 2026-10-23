@@ -5,9 +5,13 @@ import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 import org.hibernate.annotations.CreationTimestamp;
-import com.fasterxml.jackson.annotation.JsonFormat;      // Naya import
-import com.fasterxml.jackson.annotation.JsonProperty;    // Naya import
+import com.fasterxml.jackson.annotation.JsonFormat;
+import com.fasterxml.jackson.annotation.JsonProperty;
+import jakarta.validation.constraints.DecimalMin;
+import jakarta.validation.constraints.Digits;
+import jakarta.validation.constraints.NotNull;
 
+import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 
@@ -25,7 +29,7 @@ public class Transaction {
     @Column(name = "user_id", nullable = false)
     private String userId;
 
-    // FIX 1: Spring ko batana ki Date kis format me aayegi
+    // Spring ko batana ki Date kis format me aayegi
     @JsonFormat(pattern = "yyyy-MM-dd")
     @Column(nullable = false)
     private LocalDate date;
@@ -35,12 +39,16 @@ public class Transaction {
 
     private String category;
 
+    // FIX (Audit BUG-02 & BUG-03): Negative amounts aur lambe decimals block karna
+    @NotNull(message = "Amount is required")
+    @DecimalMin(value = "0.01", inclusive = true, message = "Amount must be strictly positive")
+    @Digits(integer = 10, fraction = 2, message = "Amount format is invalid (max 2 decimal places)")
     @Column(nullable = false)
-    private Double amount;
+    private BigDecimal amount;
 
     private String description;
 
-    // FIX 2: Frontend se JSON me ye field "hidden" naam se aati hai
+    // Frontend se JSON me ye field "hidden" naam se aati hai
     @JsonProperty("hidden")
     @Column(name = "is_hidden", columnDefinition = "boolean default false")
     private boolean isHidden;

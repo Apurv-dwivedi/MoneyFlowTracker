@@ -2,6 +2,24 @@
 // 🚀 SPRING BOOT BACKEND INTEGRATION (NO SUPABASE)
 // ===================================================
 
+// Mitigates BUG-07 (Stored XSS) by neutralizing HTML tags
+function sanitizeHTML(str) {
+    if (!str) return "-";
+    return String(str).replace(/[&<>'"]/g, tag => ({
+        '&': '&amp;', '<': '&lt;', '>': '&gt;', "'": '&#39;', '"': '&quot;'
+    }[tag]));
+}
+
+// Mitigates BUG-01 & BUG-04 by enforcing standard Indian formatting and rounding
+function formatINR(amount) {
+    return new Intl.NumberFormat('en-IN', {
+        style: 'currency',
+        currency: 'INR',
+        minimumFractionDigits: 2,
+        maximumFractionDigits: 2
+    }).format(Number(amount));
+}
+
 let totalMoney = 0, savings = 0, expense = 0, spentToday = 0, dailyBudget = 0, emergencyFund = 0, totalRent = 0;
 let today = new Date(), year = today.getFullYear(), month = today.getMonth();
 let expenseChart, trendChartInstance, transactions = [];
@@ -502,6 +520,14 @@ async function loadData() {
 async function addTransaction() {
     const addBtn = document.getElementById('mainAddTxnBtn');
 
+    // Mitigates BUG-05 (Double Submit Race Condition)
+    if (addBtn) {
+        addBtn.disabled = true;
+        addBtn.innerText = "Adding Entry... ⏳";
+        addBtn.style.opacity = "0.6";
+        addBtn.style.cursor = "not-allowed";
+    }
+
     let type = document.getElementById("type").value;
     let category = null;
 
@@ -510,6 +536,7 @@ async function addTransaction() {
         category = catVal ? catVal.trim() : "";
         if (category === "") {
             showToast("Please select a category", "error");
+            if (addBtn) { addBtn.disabled = false; addBtn.innerText = "Add Transaction"; addBtn.style.opacity = "1"; addBtn.style.cursor = "pointer"; }
             return;
         }
     } else if (type === "rent") {
@@ -532,14 +559,8 @@ async function addTransaction() {
 
     if (amount <= 0 || isNaN(amount) || description === "") {
         showToast("Please enter a valid amount and description", "error");
+        if (addBtn) { addBtn.disabled = false; addBtn.innerText = "Add Transaction"; addBtn.style.opacity = "1"; addBtn.style.cursor = "pointer"; }
         return;
-    }
-
-    if (addBtn) {
-        addBtn.disabled = true;
-        addBtn.innerText = "Adding Entry... ⏳";
-        addBtn.style.opacity = "0.6";
-        addBtn.style.cursor = "not-allowed";
     }
 
     const newTransaction = {
@@ -644,15 +665,18 @@ function setTimeFilter(timeSpan) { currentTimeFilter = timeSpan; updateUI(); }
 
 function updateUI() {
     const remaining = totalMoney - savings - expense - emergencyFund;
-    document.getElementById("totalMoney").textContent = "₹" + totalMoney;
-    document.getElementById("savings").textContent = "₹" + savings;
-    document.getElementById("expense").textContent = "₹" + expense;
-    document.getElementById("remaining").textContent = "₹" + remaining;
-    document.getElementById("emergencyDisplay").textContent = "₹" + emergencyFund;
-    document.getElementById("rentDisplay").textContent = "₹" + totalRent;
 
-    document.getElementById("monthlyIncome").textContent = "₹" + totalMoney;
-    document.getElementById("monthlyExpense").textContent = "₹" + expense;
+    // Mitigates BUG-01 & BUG-04 using formatINR function
+    document.getElementById("totalMoney").textContent = formatINR(totalMoney);
+    document.getElementById("savings").textContent = formatINR(savings);
+    document.getElementById("expense").textContent = formatINR(expense);
+    document.getElementById("remaining").textContent = formatINR(remaining);
+    document.getElementById("emergencyDisplay").textContent = formatINR(emergencyFund);
+    document.getElementById("rentDisplay").textContent = formatINR(totalRent);
+
+    document.getElementById("monthlyIncome").textContent = formatINR(totalMoney);
+    document.getElementById("monthlyExpense").textContent = formatINR(expense);
+
     const savingRate = totalMoney > 0 ? ((savings / totalMoney) * 100).toFixed(1) : 0;
     document.getElementById("savingRate").textContent = savingRate + "%";
 
@@ -694,12 +718,13 @@ function updateUI() {
                     displayDate = displayDate.split('-').reverse().join('-');
                 }
 
+                // Mitigates BUG-07 (Stored XSS) and formatting issues
                 list.innerHTML += `<tr>
-                    <td>${displayDate}</td>
-                    <td style="text-transform: capitalize;">${displayType}</td>
-                    <td>${item.type === "expense" ? (item.category || "-") : "-"}</td>
-                    <td style="color: ${amountColor}">₹${item.amount}</td>
-                    <td>${item.description}</td>
+                    <td>${sanitizeHTML(displayDate)}</td>
+                    <td style="text-transform: capitalize;">${sanitizeHTML(displayType)}</td>
+                    <td>${item.type === "expense" ? sanitizeHTML(item.category || "-") : "-"}</td>
+                    <td style="color: ${amountColor}">${formatINR(item.amount)}</td>
+                    <td>${sanitizeHTML(item.description)}</td>
                     <td>
                         <button style="background: #f59e0b; border: none; padding: 5px 10px; border-radius: 6px; color: white; cursor: pointer; margin-right: 5px;" onclick="hideTransaction('${item.id}')">Hide</button>
                         <button style="background: #ef4444; border: none; padding: 5px 10px; border-radius: 6px; color: white; cursor: pointer;" onclick="deleteTransaction('${item.id}')">Del</button>
@@ -726,12 +751,14 @@ function updateUI() {
                     if(displayDate && displayDate.includes('-')) {
                         displayDate = displayDate.split('-').reverse().join('-');
                     }
+
+                    // Mitigates BUG-07 (Stored XSS) and formatting issues
                     vaultList.innerHTML += `<tr style="background: rgba(239, 68, 68, 0.05);">
-                        <td>${displayDate}</td>
-                        <td style="text-transform: capitalize;">${item.type}</td>
-                        <td>${item.type === "expense" ? (item.category || "-") : "-"}</td>
-                        <td style="color: ${amountColor}">₹${item.amount}</td>
-                        <td>${item.description}</td>
+                        <td>${sanitizeHTML(displayDate)}</td>
+                        <td style="text-transform: capitalize;">${sanitizeHTML(item.type)}</td>
+                        <td>${item.type === "expense" ? sanitizeHTML(item.category || "-") : "-"}</td>
+                        <td style="color: ${amountColor}">${formatINR(item.amount)}</td>
+                        <td>${sanitizeHTML(item.description)}</td>
                         <td>
                             <button style="background: #10b981; border: none; padding: 5px 10px; border-radius: 6px; color: white; cursor: pointer; margin-right: 5px;" onclick="unhideTransaction('${item.id}')">Unhide</button>
                             <button style="background: #ef4444; border: none; padding: 5px 10px; border-radius: 6px; color: white; cursor: pointer;" onclick="deleteTransaction('${item.id}')">Del</button>
@@ -751,7 +778,7 @@ function updateInsights() {
         document.getElementById('topCategory').innerText = "-";
         return;
     }
-    document.getElementById('highestExpense').innerText = "₹" + Math.max(...expTx.map(t => t.amount));
+    document.getElementById('highestExpense').innerText = formatINR(Math.max(...expTx.map(t => t.amount)));
     let catCount = {};
     expTx.forEach(t => { catCount[t.category] = (catCount[t.category] || 0) + 1; });
     document.getElementById('topCategory').innerText = Object.keys(catCount).reduce((a, b) => catCount[a] > catCount[b] ? a : b);
@@ -765,7 +792,7 @@ function updateGoal() {
     const goalProgress = document.getElementById('goalProgress');
     const goalPercent = document.getElementById('goalPercent');
 
-    if (goalCurrent) goalCurrent.innerText = "₹" + current;
+    if (goalCurrent) goalCurrent.innerText = formatINR(current);
     if (goalProgress) {
         goalProgress.style.width = percent + "%";
         if(percent === 0) goalProgress.style.background = "transparent";
@@ -819,23 +846,23 @@ function update50_30_20() {
     needsBar.style.width = needsBarWidth + '%';
     needsBar.style.background = needsPct > 50 ? '#ef4444' : '#38bdf8';
     document.getElementById('needsRatioText').innerHTML =
-        `<strong style="color: ${needsPct > 50 ? '#ef4444' : '#38bdf8'}">${needsPct}%</strong> / 50% <span style="color: #94a3b8;">(₹${needs.toLocaleString()})</span>`;
+        `<strong style="color: ${needsPct > 50 ? '#ef4444' : '#38bdf8'}">${needsPct}%</strong> / 50% <span style="color: #94a3b8;">(${formatINR(needs)})</span>`;
 
     wantsBar.style.width = wantsBarWidth + '%';
     wantsBar.style.background = wantsPct > 30 ? '#ef4444' : '#f59e0b';
     document.getElementById('wantsRatioText').innerHTML =
-        `<strong style="color: ${wantsPct > 30 ? '#ef4444' : '#f59e0b'}">${wantsPct}%</strong> / 30% <span style="color: #94a3b8;">(₹${wants.toLocaleString()})</span>`;
+        `<strong style="color: ${wantsPct > 30 ? '#ef4444' : '#f59e0b'}">${wantsPct}%</strong> / 30% <span style="color: #94a3b8;">(${formatINR(wants)})</span>`;
 
     savingsBar.style.width = savingsBarWidth + '%';
     savingsBar.style.background = '#22c55e';
     document.getElementById('savingsRatioText').innerHTML =
-        `<strong style="color: #22c55e">${savingsPct}%</strong> / 20% <span style="color: #94a3b8;">(₹${totalSavingsTracked.toLocaleString()})</span>`;
+        `<strong style="color: #22c55e">${savingsPct}%</strong> / 20% <span style="color: #94a3b8;">(${formatINR(totalSavingsTracked)})</span>`;
 }
 
 function updateDailyBudgetUI(limit, remaining) {
-    document.getElementById("todayLimit").innerText = "Limit: ₹" + limit.toFixed(2);
-    document.getElementById("spentToday").innerText = "Spent: ₹" + spentToday;
-    document.getElementById("remainingToday").innerText = remaining >= 0 ? "Remain: ₹" + remaining.toFixed(2) : "Overspent: ₹" + Math.abs(remaining).toFixed(2);
+    document.getElementById("todayLimit").innerText = "Limit: " + formatINR(limit);
+    document.getElementById("spentToday").innerText = "Spent: " + formatINR(spentToday);
+    document.getElementById("remainingToday").innerText = remaining >= 0 ? "Remain: " + formatINR(remaining) : "Overspent: " + formatINR(Math.abs(remaining));
     let percent = limit > 0 ? (spentToday / limit) * 100 : 0;
     if (percent > 100) percent = 100;
     let progressDiv = document.getElementById("progressBar");
@@ -865,7 +892,7 @@ function generateFinancialAdvice() {
                     <span style="font-weight: 600; color: #f87171;">⚠️ Budget Variance Alert</span>
                     <span style="font-size: 11px; padding: 2px 8px; border-radius: 6px; background: rgba(239, 68, 68, 0.2); color: #f87171;">Overrun</span>
                 </div>
-                Daily burn exceeds allocation by <b>₹${variance.toLocaleString()}</b> (Spent: ₹${spentToday.toLocaleString()} / Cap: ₹${dailyBudget.toFixed(0)}). Recommend discretionary spending freeze for remaining hours.
+                Daily burn exceeds allocation by <b>${formatINR(variance)}</b> (Spent: ${formatINR(spentToday)} / Cap: ${formatINR(dailyBudget)}). Recommend discretionary spending freeze for remaining hours.
             </div>`;
     } else if (spentToday > 0 && spentToday <= dailyBudget) {
         const utilPct = Math.round((spentToday / dailyBudget) * 100);
@@ -875,7 +902,7 @@ function generateFinancialAdvice() {
                     <span style="font-weight: 600; color: #4ade80;">🛡️ Controlled Capital Outflow</span>
                     <span style="font-size: 11px; padding: 2px 8px; border-radius: 6px; background: rgba(34, 197, 94, 0.2); color: #4ade80;">${utilPct}% Allocated</span>
                 </div>
-                Daily burn of <b>₹${spentToday.toLocaleString()}</b> is running inside safe operational limits (Budget: ₹${dailyBudget.toFixed(0)}).
+                Daily burn of <b>${formatINR(spentToday)}</b> is running inside safe operational limits (Budget: ${formatINR(dailyBudget)}).
             </div>`;
     }
 
@@ -899,22 +926,22 @@ function generateFinancialAdvice() {
                     <span style="font-size: 11px; color: #94a3b8;">10Y @ 12% CAGR</span>
                 </div>
                 <p style="font-size: 13px; color: #cbd5e1; margin-bottom: 12px; line-height: 1.5;">
-                    Today's non-core capital outflow of <b>₹${totalDiscretionary.toLocaleString()}</b> has an opportunity valuation:
+                    Today's non-core capital outflow of <b>${formatINR(totalDiscretionary)}</b> has an opportunity valuation:
                 </p>
                 <div class="metric-projection-grid">
                     <div class="proj-box">
                         <small>Current Outflow</small>
-                        <span>₹${totalDiscretionary.toLocaleString()}</span>
+                        <span>${formatINR(totalDiscretionary)}</span>
                     </div>
                     <div class="proj-arrow">➔</div>
                     <div class="proj-box highlight">
                         <small>Projected Valuation</small>
-                        <span>₹${futureValue.toLocaleString()}</span>
+                        <span>${formatINR(futureValue)}</span>
                     </div>
                 </div>
                 <div style="margin-top: 10px; font-size: 11.5px; color: #94a3b8; display: flex; justify-content: space-between;">
                     <span>Foregone Compounded Alpha:</span>
-                    <strong style="color: #22c55e;">+₹${netWealthGain.toLocaleString()}</strong>
+                    <strong style="color: #22c55e;">+${formatINR(netWealthGain)}</strong>
                 </div>
             </div>`;
     }
@@ -932,7 +959,7 @@ function generateFinancialAdvice() {
                     <span style="font-weight: 600; color: #38bdf8;">📊 Allocation Concentration</span>
                     <span style="font-size: 11px; color: #38bdf8;">${catWeight}% of Revenue</span>
                 </div>
-                Primary expense load detected in <b>${topCat}</b> (₹${topCatAmount.toLocaleString()}). Optimizing this stream by 15% recovers <b>₹${Math.round(topCatAmount * 0.15).toLocaleString()}</b> directly into liquid reserve.
+                Primary expense load detected in <b>${topCat}</b> (${formatINR(topCatAmount)}). Optimizing this stream by 15% recovers <b>${formatINR(Math.round(topCatAmount * 0.15))}</b> directly into liquid reserve.
             </div>`;
     }
 

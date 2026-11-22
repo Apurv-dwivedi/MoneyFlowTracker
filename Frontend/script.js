@@ -1208,3 +1208,11 @@ async function deleteCustomCategory() {
         showToast("Error deleting category", "error");
     }
 }
+
+// ⚡ 5-Minute Keep-Alive Ping (Keeps Render Backend & Database awake)
+setInterval(() => {
+    fetch('https://moneyflowtracker.onrender.com/api/status')
+        .then(res => res.json())
+        .then(data => console.log('[Keep-Alive] 5-min ping response:', data))
+        .catch(err => console.debug('[Keep-Alive] ping notice:', err));
+}, 300000); // 300,000 ms = 5 minutes
